@@ -1,0 +1,21 @@
+<div class="main-page-container">
+  <h1 class="title">Choose your wallpaper</h1>
+  <div class="grid-container">
+    <div class="wallpaper" *ngFor="let photo of appService.photos">
+      <img src="{{photo.urls.small}}" alt="{{photo.description}}" (click)="openPopup(photo.id)">
+      <div class="price-container">
+        <mat-checkbox class="select-checkbox" (click)="selectPhoto(photo.id)"></mat-checkbox>
+        <img src="../../assets/img/arrow.svg" alt="">
+        <span class="price">${{photo.price}}</span>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="popup" *ngIf="openedPhoto">
+  <div class="popup-background" (click)="closePopup()"></div>
+  <div class="popup-content">
+    <img src="{{openedPhoto.urls.full}}" alt="{{openedPhoto.description}}">
+    <button mat-raised-button (click)="addToBasketFromPopup()">Buy</button>
+  </div>
+</div>
+<button *ngIf="selectedPhotos.length !== 0" mat-raised-button (click)="addToBasket()" class="buy-button">Buy {{selectedPhotos.length}}</button>

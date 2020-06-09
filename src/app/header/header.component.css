@@ -1,0 +1,31 @@
+.header-container {
+  width: 100%;
+  height: 100px;
+  background: #33dd95;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.search-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  height: 20px;
+}
+
+.search-container input {
+  width: 250px;
+}
+
+.search-container img {
+  width: 15px;
+  position: absolute;
+  right: 10px;
+  top: 2px;
+}
+
+.basket img {
+  width: 40px;
+}

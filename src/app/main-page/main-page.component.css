@@ -1,0 +1,89 @@
+.main-page-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+}
+
+.title {
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 20px;
+  align-items: center;
+}
+
+.wallpaper {
+  width: 200px;
+  height: 200px;
+  background: #666666;
+  position: relative;
+}
+
+.wallpaper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.select-checkbox {
+  position: absolute;
+  top: 0;
+  right: 2px;
+}
+
+.price-container img{
+  transform: rotate(-45deg);
+  position: absolute;
+  bottom: -42px;
+  right: -42px;
+  width: 130px;
+  height: 130px;
+}
+
+.price {
+  position: absolute;
+  bottom: 15px;
+  left: 165px;
+}
+
+.popup {
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  position: fixed;
+  display: flex;
+  justify-content: center;
+}
+
+.popup-background {
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  background-color: rgba(10,24,41,0.82);
+}
+
+.popup-content {
+  position: fixed;
+  top: 25%;
+  display: flex;
+  flex-direction: column;
+}
+
+.popup img {
+  max-width: 400px;
+  height: auto;
+  object-fit: cover;
+  z-index: 2;
+}
+
+.buy-button {
+  position: fixed;
+  top: 180px;
+  right: 440px;
+}

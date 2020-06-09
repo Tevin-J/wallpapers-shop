@@ -1,0 +1,13 @@
+<div class="header-container">
+  <div class="search-container">
+    <input matInput type="text" [(ngModel)]="appService.searchTerm" placeholder="search wallpaper">
+    <img src="../../assets/img/search.svg" alt="search">
+  </div>
+  <div class="basket">
+    <img *ngIf="!appService.basket.length; else fullBasket" src="../../assets/img/basket-black.svg" alt="basket">
+    <ng-template #fullBasket>
+      <img src="../../assets/img/basket-color.svg" alt="basket" >
+      <span [matBadge]="appService.basket.length.toString()" matBadgeColor="warn" matBadgePosition="before"></span>
+    </ng-template>
+  </div>
+</div>
