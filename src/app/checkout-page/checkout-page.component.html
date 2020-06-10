@@ -1,0 +1,31 @@
+<div class="title">
+  <h1>Check before purchase</h1>
+</div>
+<div class="products">
+  <div class="product-container" *ngFor="let photo of basket">
+    <div class="product-info">
+      <img src="{{photo.urls.small}}" alt="">
+      <div class="product-name">
+        Photo ID: {{photo.id}}
+      </div>
+    </div>
+    <p class="price">Price: ${{photo.price}}</p>
+    <div class="remove-button">
+      <button mat-raised-button (click)="removePhoto(photo.id)">x</button>
+    </div>
+  </div>
+</div>
+
+<div class="promo-block">
+  <h2>Enter promo code</h2>
+  <input matInput type="text" placeholder="for $5 and more" [(ngModel)]="promoTerm">
+  <button mat-raised-button (click)="comparePromo()">OK</button>
+</div>
+
+<div class="total-block">
+  <h2>TOTAL</h2>
+  <div class="cost">
+    ${{cost}}
+  </div>
+</div>
+

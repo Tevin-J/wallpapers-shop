@@ -17,6 +17,8 @@ export class HeaderComponent implements OnInit {
     this.appService.filteredByTitlePhotos = this.appService.photos.filter(p => {
       if (p.alt_description) {
         return p.alt_description.toLowerCase().includes(term.toLowerCase());
+      } else {
+        return p;
       }
     });
     this.appService.filteredPhotos = this.appService.filteredByTitlePhotos;
