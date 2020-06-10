@@ -12,6 +12,7 @@ import {HttpClientModule} from '@angular/common/http';
 import {MatButtonModule} from '@angular/material/button';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatBadgeModule} from '@angular/material/badge';
+import {MatSliderModule} from '@angular/material/slider';
 
 @NgModule({
   declarations: [
@@ -28,7 +29,8 @@ import {MatBadgeModule} from '@angular/material/badge';
     FormsModule,
     HttpClientModule,
     MatCheckboxModule,
-    MatBadgeModule
+    MatBadgeModule,
+    MatSliderModule
   ],
   providers: [],
   bootstrap: [AppComponent]

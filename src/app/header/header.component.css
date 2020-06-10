@@ -13,19 +13,15 @@
   align-items: center;
   position: relative;
   height: 20px;
+  padding-right: 25px;
+  background: url("../../assets/img/search.svg") no-repeat right center;
 }
 
 .search-container input {
   width: 250px;
 }
 
-.search-container img {
-  width: 15px;
-  position: absolute;
-  right: 10px;
-  top: 2px;
-}
-
 .basket img {
   width: 40px;
+  cursor: pointer;
 }

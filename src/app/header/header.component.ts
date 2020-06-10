@@ -13,4 +13,12 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  searchWallpapersByTitle(term: string) {
+    this.appService.filteredByTitlePhotos = this.appService.photos.filter(p => {
+      if (p.alt_description) {
+        return p.alt_description.toLowerCase().includes(term.toLowerCase());
+      }
+    });
+    this.appService.filteredPhotos = this.appService.filteredByTitlePhotos;
+  }
 }
