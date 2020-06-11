@@ -10,6 +10,7 @@ import {Location} from '@angular/common';
 })
 export class HeaderComponent implements OnInit {
 
+  /*необходим для определения - показывать или нет поисковый инпут*/
   location: Location;
 
   constructor(public appService: AppService, location: Location) {
@@ -19,6 +20,7 @@ export class HeaderComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  /*метод поиска картинок по введеному в инпут значению*/
   searchWallpapersByTitle(term: string) {
     this.appService.filteredByTitlePhotos = this.appService.photos.filter(p => {
       if (p.alt_description) {

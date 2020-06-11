@@ -10,6 +10,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 })
 export class CheckoutPageComponent implements OnInit {
 
+  /*корзина, получаемая из корзины в appService. та корзина - Set, эта - массив*/
   basket: Array<IPhoto> = [];
 
   promo = 'banana';
@@ -31,16 +32,22 @@ export class CheckoutPageComponent implements OnInit {
   constructor(public appService: AppService, public apiCallsService: ApiCallsService) { }
 
   ngOnInit(): void {
+
+    /*кладем в массив basket ключи из Set basket*/
     this.basket = [...this.appService.basket.keys()];
+
+    /*высчитываем стоимость всех фото из корзины*/
     this.initialCost = [...this.appService.basket.keys()].reduce((acc, val) => {
       return +acc + +val.price;
     }, 0);
 
+    /*инициализируем форму по вводу промокода*/
     this.promoForm = new FormGroup({
       promo: new FormControl('', [Validators.required, this.correctPromo])
     });
   }
 
+  /*валидатор проверки правильности промокода*/
   correctPromo(control: FormControl): {[key: string]: boolean} {
     if (control.value !== 'banana') {
       return {
@@ -50,6 +57,7 @@ export class CheckoutPageComponent implements OnInit {
     return null;
   }
 
+  /*метод удаления фото из корзины*/
   removePhoto(id) {
     this.basket = this.basket.filter(p => p.id !== id);
     this.appService.basket.forEach(((value, value2, set) => {
@@ -57,6 +65,8 @@ export class CheckoutPageComponent implements OnInit {
         set.delete(value);
       }
     }));
+
+    /*пересчитываем цену на основе обновленной корзины*/
     this.initialCost = [...this.appService.basket.keys()].reduce((acc, val) => {
       return +acc + +val.price;
     }, 0);
@@ -64,9 +74,11 @@ export class CheckoutPageComponent implements OnInit {
     this.finalCost = null;
   }
 
+  /*метод сабмита формы*/
   submitPromo() {
     const formData = {...this.promoForm.value};
     if (this.promo === formData.promo) {
+      /*пересчет срабатывает только если сумма покупок больше $5*/
       if (this.initialCost >= 5) {
         this.finalCost = Math.floor(this.initialCost * 0.8);
         this.isPromoApplied = true;
@@ -74,6 +86,7 @@ export class CheckoutPageComponent implements OnInit {
     }
   }
 
+  /*метод оплаты покупок, на "сервере" случайно определяем успешно ли прошла оплата*/
   purchase() {
     this.isPurchaseSucceed = null;
     this.popupIsShowed = true;
@@ -82,6 +95,8 @@ export class CheckoutPageComponent implements OnInit {
     });
   }
 
+  /*если оплата прошла успешно, то при нажатии соответствующей кнопки в модальном окне, вызовется
+  данный метод, который очистит корзину, закроет модальное окно и сделает отписку*/
   clearAll() {
     this.popupIsShowed = false;
     this.isPurchaseSucceed = null;

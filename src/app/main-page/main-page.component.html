@@ -1,10 +1,13 @@
 <div class="main-page-container">
   <h1 class="title">Choose your wallpaper</h1>
-  <div class="grid-container">
+  <div class="grid-container" infiniteScroll [infiniteScrollDistance]="2"
+       [infiniteScrollThrottle]="50" (scrolled)="onScroll()">
       <div class="wallpaper" *ngFor="let photo of appService.filteredPhotos">
-        <img src="{{photo.urls.small}}" alt="{{photo.alt_description}}" (click)="openPopup(photo.id)">
+        <img src="{{photo.urls.small}}" alt="{{photo.alt_description}}"
+             (click)="openPopup(photo.id)">
         <div class="price-container">
-          <mat-checkbox class="select-checkbox" (click)="selectPhoto(photo.id)" type="checkbox" [checked]="photo.isSelected"></mat-checkbox>
+          <mat-checkbox class="select-checkbox" (click)="selectPhoto(photo.id)"
+                        type="checkbox" [checked]="photo.isSelected"></mat-checkbox>
           <pre>{{photo.isSelected}}</pre>
           <img src="../../assets/img/arrow.svg" alt="">
           <span class="price">${{photo.price}}</span>
@@ -20,7 +23,8 @@
     <button mat-raised-button (click)="addToBasketFromPopup()">Buy</button>
   </div>
 </div>
-<button *ngIf="selectedPhotos.length !== 0" mat-raised-button (click)="addToBasket()" class="buy-button">Buy {{selectedPhotos.length}}</button>
+<button *ngIf="selectedPhotos.length !== 0" mat-raised-button (click)="addToBasket()"
+        class="buy-button">Buy {{selectedPhotos.length}}</button>
 <div class="settings" *ngIf="!popupIsShowed; else settingsPopup">
   <img src="../../assets/img/settings.svg" alt="settings" (click)="showSettingsPopup()">
 </div>
@@ -29,7 +33,8 @@
     <p>Filters</p>
     <div>
       <p>price</p>
-      <mat-slider thumbLabel tickInterval="1" min="1" max="10" [(ngModel)]="priceFilterValue"></mat-slider>
+      <mat-slider thumbLabel tickInterval="1" min="1" max="10"
+                  [(ngModel)]="priceFilterValue"></mat-slider>
     </div>
     <button mat-raised-button (click)="applyFilters()">Apply filters</button>
   </div>
