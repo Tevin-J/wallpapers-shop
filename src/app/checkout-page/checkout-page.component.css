@@ -111,6 +111,13 @@
   align-items: center;
 }
 
+.popup-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 .ng-invalid.ng-touched input {
   border: 2px solid red;
 }

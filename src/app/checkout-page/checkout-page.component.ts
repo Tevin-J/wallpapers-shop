@@ -96,10 +96,8 @@ export class CheckoutPageComponent implements OnInit {
   }
 
   /*если оплата прошла успешно, то при нажатии соответствующей кнопки в модальном окне, вызовется
-  данный метод, который очистит корзину, закроет модальное окно и сделает отписку*/
+  данный метод, который очистит корзину и сделает отписку*/
   clearAll() {
-    this.popupIsShowed = false;
-    this.isPurchaseSucceed = null;
     this.appService.clearBasket();
     this.subscription.unsubscribe();
   }

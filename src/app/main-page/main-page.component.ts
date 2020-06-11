@@ -2,6 +2,9 @@ import {Component, OnInit} from '@angular/core';
 import {ApiCallsService} from '../services/api-calls.service';
 import {AppService, IPhoto} from '../services/app-service.service';
 
+interface IStars {
+  value: number;
+}
 @Component({
   selector: 'app-main-page',
   templateUrl: './main-page.component.html',
@@ -16,6 +19,16 @@ export class MainPageComponent implements OnInit {
   popupIsShowed = false;
 
   priceFilterValue = 10;
+
+  popularityFilterValue = null;
+
+  stars: Array<IStars> = [
+    {value: 1},
+    {value: 2},
+    {value: 3},
+    {value: 4},
+    {value: 5}
+  ];
 
   constructor(
     public apiCallsService: ApiCallsService,
@@ -34,6 +47,7 @@ export class MainPageComponent implements OnInit {
         response.forEach(p => {
           p.price = Math.floor(Math.random() * 10 + 1);
           p.isSelected = false;
+          p.popularity = Math.floor(Math.random() * 5 + 1);
         });
 
         /*добавляем порцию загруженных фото в общий массив фотографий*/
@@ -93,13 +107,26 @@ export class MainPageComponent implements OnInit {
   /*метод фильтрации фото по параметрам*/
   applyFilters() {
     this.showSettingsPopup();
-    this.appService.filteredByParamsPhotos = this.appService.filteredByTitlePhotos.filter(p => p.price <= this.priceFilterValue);
+    this.appService.filteredByParamsPhotos = this.appService.filteredByTitlePhotos.filter(p => {
+      if (this.popularityFilterValue) {
+        if (p.price <= this.priceFilterValue && p.popularity === this.popularityFilterValue) {
+          return p;
+        }
+      } else {
+         return p.price <= this.priceFilterValue;
+      }
+    });
+    this.popularityFilterValue = null;
     this.appService.filteredPhotos = this.appService.filteredByParamsPhotos;
   }
 
   /*метод, загружающий новые фото при скролле до конца страницы*/
   onScroll() {
     this.fetchWallpapers();
+  }
+
+  onStarFilterValueChanged(event) {
+    this.popularityFilterValue = event.source.value;
   }
 
 }

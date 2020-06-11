@@ -15,6 +15,8 @@ import {MatBadgeModule} from '@angular/material/badge';
 import {MatSliderModule} from '@angular/material/slider';
 import { CheckoutPageComponent } from './checkout-page/checkout-page.component';
 import {InfiniteScrollModule} from 'ngx-infinite-scroll';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatSelectModule} from '@angular/material/select';
 
 @NgModule({
   declarations: [
@@ -35,7 +37,9 @@ import {InfiniteScrollModule} from 'ngx-infinite-scroll';
     MatCheckboxModule,
     MatBadgeModule,
     MatSliderModule,
-    InfiniteScrollModule
+    InfiniteScrollModule,
+    MatProgressSpinnerModule,
+    MatSelectModule
   ],
   providers: [],
   bootstrap: [AppComponent]

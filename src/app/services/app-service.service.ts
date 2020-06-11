@@ -9,6 +9,7 @@ export interface IPhoto {
   };
   price: number;
   isSelected: boolean;
+  popularity: number;
 }
 @Injectable({
   providedIn: 'root'

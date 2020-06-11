@@ -24,7 +24,7 @@ export class ApiCallsService {
     let params = new HttpParams();
     params = params.set('client_id', 'E-7mojK6FreK7uOgbFmb7maACxNSf6c97u19GGNtfcU');
     params = params.append('page', this.page.toString());
-    params = params.append('per_page', '9');
+    params = params.append('per_page', '30');
     this.page ++;
     return this.http.get<any>('https://api.unsplash.com/photos/', {
       params

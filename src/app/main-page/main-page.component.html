@@ -8,7 +8,6 @@
         <div class="price-container">
           <mat-checkbox class="select-checkbox" (click)="selectPhoto(photo.id)"
                         type="checkbox" [checked]="photo.isSelected"></mat-checkbox>
-          <pre>{{photo.isSelected}}</pre>
           <img src="../../assets/img/arrow.svg" alt="">
           <span class="price">${{photo.price}}</span>
         </div>
@@ -30,11 +29,24 @@
 </div>
 <ng-template #settingsPopup>
   <div class="settings-popup">
-    <p>Filters</p>
+    <h3>Filters</h3>
     <div>
-      <p>price</p>
-      <mat-slider thumbLabel tickInterval="1" min="1" max="10"
-                  [(ngModel)]="priceFilterValue"></mat-slider>
+      <div>
+        <h4>Price</h4>
+        <mat-slider thumbLabel tickInterval="1" min="1" max="10"
+                    [(ngModel)]="priceFilterValue"></mat-slider>
+      </div>
+      <div>
+        <h4>Popularity</h4>
+        <mat-form-field>
+          <mat-label>Stars</mat-label>
+          <mat-select>
+            <mat-option *ngFor="let star of stars" [value]="star.value" (onSelectionChange)="onStarFilterValueChanged($event)">
+              {{star.value}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
     </div>
     <button mat-raised-button (click)="applyFilters()">Apply filters</button>
   </div>
