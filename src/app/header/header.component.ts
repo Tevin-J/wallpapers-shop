@@ -1,14 +1,20 @@
 import { Component, OnInit } from '@angular/core';
 import {AppService} from '../services/app-service.service';
+import {Location} from '@angular/common';
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css']
+  styleUrls: ['./header.component.css'],
+  providers: [Location]
 })
 export class HeaderComponent implements OnInit {
 
-  constructor(public appService: AppService) { }
+  location: Location;
+
+  constructor(public appService: AppService, location: Location) {
+    this.location = location;
+  }
 
   ngOnInit(): void {
   }

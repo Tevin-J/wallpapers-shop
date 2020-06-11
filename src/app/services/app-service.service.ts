@@ -17,7 +17,7 @@ export class AppService {
 
   searchTerm = '';
 
-  basket = new Set();
+  basket: Set<IPhoto> = new Set();
 
   photos: Array<IPhoto> = [];
 
@@ -28,4 +28,8 @@ export class AppService {
   filteredPhotos: Array<IPhoto> = [];
 
   constructor() { }
+
+  clearBasket() {
+    this.basket.clear();
+  }
 }

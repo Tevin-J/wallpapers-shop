@@ -1,14 +1,23 @@
 <div class="header-container">
-  <div class="search-container">
-    <input matInput type="text" [(ngModel)]="appService.searchTerm" placeholder="search wallpaper" (keyup.enter)="searchWallpapersByTitle(appService.searchTerm)">
+  <div class="search-container" *ngIf="location.path() === ''; else mainPage">
+    <input matInput type="text" [(ngModel)]="appService.searchTerm" placeholder="search wallpaper"
+           (keyup.enter)="searchWallpapersByTitle(appService.searchTerm)">
   </div>
+  <ng-template #mainPage>
+    <div class="main-page-button" *ngIf="location.path().includes('/checkout')">
+      <a routerLink="/">
+        <button mat-raised-button>Main page</button>
+      </a>
+    </div>
+  </ng-template>
+
   <div class="basket">
     <img *ngIf="!appService.basket.size; else fullBasket" src="../../assets/img/basket-black.svg" alt="basket">
     <ng-template #fullBasket>
       <a routerLink="/checkout">
-        <img src="../../assets/img/basket-color.svg" alt="basket" >
+        <img src="../../assets/img/basket-color.svg" alt="basket">
         <span [matBadge]="appService.basket.size.toString()" matBadgeColor="warn" matBadgePosition="before"></span>
       </a>
-   </ng-template>
+    </ng-template>
   </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {ApiCallsService} from '../services/api-calls.service';
 import {AppService, IPhoto} from '../services/app-service.service';
 

@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import {AppService} from '../services/app-service.service';
+import {AppService, IPhoto} from '../services/app-service.service';
+import {ApiCallsService} from '../services/api-calls.service';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
 
 @Component({
   selector: 'app-checkout-page',
@@ -8,21 +10,44 @@ import {AppService} from '../services/app-service.service';
 })
 export class CheckoutPageComponent implements OnInit {
 
-  basket = [];
+  basket: Array<IPhoto> = [];
 
-  promo = 'discount';
+  promo = 'banana';
 
-  promoTerm = '';
+  promoForm: FormGroup;
 
-  cost = 0;
+  initialCost = 0;
 
-  constructor(public appService: AppService) { }
+  finalCost: number;
+
+  isPromoApplied = false;
+
+  popupIsShowed = false;
+
+  isPurchaseSucceed: number;
+
+  subscription;
+
+  constructor(public appService: AppService, public apiCallsService: ApiCallsService) { }
 
   ngOnInit(): void {
     this.basket = [...this.appService.basket.keys()];
-    this.cost = [...this.appService.basket.keys()].reduce((acc, val) => {
+    this.initialCost = [...this.appService.basket.keys()].reduce((acc, val) => {
       return +acc + +val.price;
     }, 0);
+
+    this.promoForm = new FormGroup({
+      promo: new FormControl('', [Validators.required, this.correctPromo])
+    });
+  }
+
+  correctPromo(control: FormControl): {[key: string]: boolean} {
+    if (control.value !== 'banana') {
+      return {
+        invalidPromo: true
+      };
+    }
+    return null;
   }
 
   removePhoto(id) {
@@ -32,18 +57,36 @@ export class CheckoutPageComponent implements OnInit {
         set.delete(value);
       }
     }));
-    this.cost = [...this.appService.basket.keys()].reduce((acc, val) => {
+    this.initialCost = [...this.appService.basket.keys()].reduce((acc, val) => {
       return +acc + +val.price;
     }, 0);
+    this.isPromoApplied = false;
+    this.finalCost = null;
   }
 
-  comparePromo() {
-    if (this.promo === this.promoTerm) {
-      this.promoTerm = '';
-      if (this.cost >= 5) {
-        this.cost = Math.floor(this.cost * 0.8);
+  submitPromo() {
+    const formData = {...this.promoForm.value};
+    if (this.promo === formData.promo) {
+      if (this.initialCost >= 5) {
+        this.finalCost = Math.floor(this.initialCost * 0.8);
+        this.isPromoApplied = true;
       }
     }
+  }
+
+  purchase() {
+    this.isPurchaseSucceed = null;
+    this.popupIsShowed = true;
+    this.subscription = this.apiCallsService.purchase().subscribe(response => {
+      this.isPurchaseSucceed = response;
+    });
+  }
+
+  clearAll() {
+    this.popupIsShowed = false;
+    this.isPurchaseSucceed = null;
+    this.appService.clearBasket();
+    this.subscription.unsubscribe();
   }
 
 }

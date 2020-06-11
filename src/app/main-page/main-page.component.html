@@ -1,16 +1,17 @@
 <div class="main-page-container">
   <h1 class="title">Choose your wallpaper</h1>
   <div class="grid-container">
-    <div class="wallpaper" *ngFor="let photo of appService.filteredPhotos">
-      <img src="{{photo.urls.small}}" alt="{{photo.alt_description}}" (click)="openPopup(photo.id)">
-      <div class="price-container">
-        <mat-checkbox class="select-checkbox" (click)="selectPhoto(photo.id)" type="checkbox" [checked]="photo.isSelected"></mat-checkbox>
-        <pre>{{photo.isSelected}}</pre>
-        <img src="../../assets/img/arrow.svg" alt="">
-        <span class="price">${{photo.price}}</span>
+      <div class="wallpaper" *ngFor="let photo of appService.filteredPhotos">
+        <img src="{{photo.urls.small}}" alt="{{photo.alt_description}}" (click)="openPopup(photo.id)">
+        <div class="price-container">
+          <mat-checkbox class="select-checkbox" (click)="selectPhoto(photo.id)" type="checkbox" [checked]="photo.isSelected"></mat-checkbox>
+          <pre>{{photo.isSelected}}</pre>
+          <img src="../../assets/img/arrow.svg" alt="">
+          <span class="price">${{photo.price}}</span>
+        </div>
       </div>
-    </div>
   </div>
+
 </div>
 <div class="popup" *ngIf="openedPhoto">
   <div class="popup-background" (click)="closePopup()"></div>

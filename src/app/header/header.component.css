@@ -25,3 +25,12 @@
   width: 40px;
   cursor: pointer;
 }
+
+.main-page-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.main-page-button button {
+  text-decoration: none;
+}
