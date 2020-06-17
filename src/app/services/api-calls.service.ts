@@ -21,14 +21,9 @@ export class ApiCallsService {
 
   /*метод запроса с сервера порции фотографий*/
   fetchWallpapers(): Observable<any> {
-    let params = new HttpParams();
-    params = params.set('client_id', 'E-7mojK6FreK7uOgbFmb7maACxNSf6c97u19GGNtfcU');
-    params = params.append('page', this.page.toString());
-    params = params.append('per_page', '30');
-    this.page ++;
-    return this.http.get<any>('https://api.unsplash.com/photos/', {
-      params
-    });
+    let page = this.page
+    this.page++
+    return this.http.get<any>(`http://localhost:3000/photos?page=${page}`);
   }
 
   /*метод оплаты покупок*/

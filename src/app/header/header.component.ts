@@ -23,8 +23,8 @@ export class HeaderComponent implements OnInit {
   /*метод поиска картинок по введеному в инпут значению*/
   searchWallpapersByTitle(term: string) {
     this.appService.filteredByTitlePhotos = this.appService.photos.filter(p => {
-      if (p.alt_description) {
-        return p.alt_description.toLowerCase().includes(term.toLowerCase());
+      if (p.description) {
+        return p.description.toLowerCase().includes(term.toLowerCase());
       } else {
         return p;
       }

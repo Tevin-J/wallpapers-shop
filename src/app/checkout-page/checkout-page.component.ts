@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {AppService, IPhoto} from '../services/app-service.service';
 import {ApiCallsService} from '../services/api-calls.service';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
@@ -8,7 +8,7 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
   templateUrl: './checkout-page.component.html',
   styleUrls: ['./checkout-page.component.css']
 })
-export class CheckoutPageComponent implements OnInit {
+export class CheckoutPageComponent implements OnInit, OnDestroy {
 
   /*корзина, получаемая из корзины в appService. та корзина - Set, эта - массив*/
   basket: Array<IPhoto> = [];
@@ -59,12 +59,8 @@ export class CheckoutPageComponent implements OnInit {
 
   /*метод удаления фото из корзины*/
   removePhoto(id) {
-    this.basket = this.basket.filter(p => p.id !== id);
-    this.appService.basket.forEach(((value, value2, set) => {
-      if (value.id === id) {
-        set.delete(value);
-      }
-    }));
+    this.appService.filterBasket(id);
+    this.basket = [...this.appService.basket.keys()]
 
     /*пересчитываем цену на основе обновленной корзины*/
     this.initialCost = [...this.appService.basket.keys()].reduce((acc, val) => {
@@ -99,6 +95,9 @@ export class CheckoutPageComponent implements OnInit {
   данный метод, который очистит корзину и сделает отписку*/
   clearAll() {
     this.appService.clearBasket();
+  }
+
+  ngOnDestroy(): void {
     this.subscription.unsubscribe();
   }
 
