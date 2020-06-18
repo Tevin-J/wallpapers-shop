@@ -34,10 +34,10 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
 
     /*кладем в массив basket ключи из Set basket*/
-    this.basket = [...this.appService.basket.keys()];
+    this.basket = this.appService.getKeysOfBasket();
 
     /*высчитываем стоимость всех фото из корзины*/
-    this.initialCost = [...this.appService.basket.keys()].reduce((acc, val) => {
+    this.initialCost = this.appService.getKeysOfBasket().reduce((acc, val) => {
       return +acc + +val.price;
     }, 0);
 
@@ -60,10 +60,15 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   /*метод удаления фото из корзины*/
   removePhoto(id) {
     this.appService.filterBasket(id);
-    this.basket = [...this.appService.basket.keys()]
+    this.basket = this.appService.getKeysOfBasket();
+
+    this.apiCallsService.removeFromOrder(id)
+      .subscribe(response => {
+        console.log(JSON.parse(response));
+      })
 
     /*пересчитываем цену на основе обновленной корзины*/
-    this.initialCost = [...this.appService.basket.keys()].reduce((acc, val) => {
+    this.initialCost = this.appService.getKeysOfBasket().reduce((acc, val) => {
       return +acc + +val.price;
     }, 0);
     this.isPromoApplied = false;
@@ -87,6 +92,12 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
     this.isPurchaseSucceed = null;
     this.popupIsShowed = true;
     this.subscription = this.apiCallsService.purchase().subscribe(response => {
+      if (response === 1) {
+        this.apiCallsService.clearAllOrders()
+          .subscribe(res => {
+            console.log(JSON.parse(res));
+          })
+      }
       this.isPurchaseSucceed = response;
     });
   }

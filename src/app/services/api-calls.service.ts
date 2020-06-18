@@ -26,8 +26,21 @@ export class ApiCallsService {
     return this.http.get<any>(`http://localhost:3000/photos?page=${page}`);
   }
 
+  addToOrder(orders): Observable<any> {
+    debugger
+    return this.http.post<any>('http://localhost:3000/orders', orders);
+  }
+
+  removeFromOrder(id): Observable<any> {
+    return this.http.delete<any>(`http://localhost:3000/orders/remove/${id}`)
+  }
+
   /*метод оплаты покупок*/
   purchase(): Observable<number> {
     return this.result;
+  }
+
+  clearAllOrders(): Observable<any> {
+    return this.http.delete<any>('http://localhost:3000/orders/remove')
   }
 }

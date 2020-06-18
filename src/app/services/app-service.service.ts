@@ -38,7 +38,7 @@ export class AppService {
     this.filteredByParamsPhotos = this.photos;
   }
 
-  addToBasketFromPopup(photo) {
+  addToBasket(photo) {
     this.basket.add(photo);
   }
 
@@ -52,10 +52,6 @@ export class AppService {
         set.delete(value);
       }
     })
-  }
-
-  addSelectedToBasket(photo) {
-    this.basket.add(photo);
   }
 
   resetIsSelected() {
@@ -76,6 +72,10 @@ export class AppService {
 
   setFilteredPhotos() {
     this.filteredPhotos = this.filteredByParamsPhotos;
+  }
+
+  getKeysOfBasket() {
+    return [...this.basket.keys()];
   }
 
   clearBasket() {

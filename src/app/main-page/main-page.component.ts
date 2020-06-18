@@ -46,12 +46,13 @@ export class MainPageComponent implements OnInit, OnDestroy {
   fetchWallpapers() {
     this.subscription = this.apiCallsService.fetchWallpapers()
       .subscribe(response => {
-        response.forEach(p => {
+        let photos = JSON.parse(response);
+        photos.forEach(p => {
           p.isSelected = false;
         });
 
         /*добавляем порцию загруженных фото в общий массив фотографий*/
-        this.appService.addLoadedPhotos(response);
+        this.appService.addLoadedPhotos(photos);
 
         /*заполняем массивы отсортированных фото общим массивом фото, чтоб в дальнейшем этими
         данными манипулировать при сортировке*/
@@ -71,7 +72,10 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   /*метод добавления {} фотографии в корзину для дальнейшей ее покупки*/
   addToBasketFromPopup() {
-    this.appService.addToBasketFromPopup(this.openedPhoto);
+    this.apiCallsService.addToOrder([this.openedPhoto])
+      .subscribe(response => {
+        this.appService.addToBasket(this.openedPhoto);
+      });
     this.closePopup();
   }
 
@@ -88,13 +92,17 @@ export class MainPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  /*метод добавления фото в корзину. корзина - карта*/
+  /*метод добавления фото в корзину. корзина - Set*/
   addToBasket() {
-    for (const value of this.selectedPhotos) {
-      this.appService.addSelectedToBasket(value)
-    }
-    this.selectedPhotos = [];
-    this.appService.resetIsSelected();
+  debugger
+    this.apiCallsService.addToOrder(this.selectedPhotos)
+      .subscribe(response => {
+        for (const photo of this.selectedPhotos) {
+          this.appService.addToBasket(photo)
+          this.selectedPhotos = [];
+          this.appService.resetIsSelected();
+        }
+      })
   }
 
   /*метод открытия-закрытия окна с настройками фильтрации*/
