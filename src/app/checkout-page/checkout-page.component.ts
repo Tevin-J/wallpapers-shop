@@ -31,9 +31,10 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
 
   removeFromOrderSubscription;
 
-  constructor(public appService: AppService, public apiCallsService: ApiCallsService) { }
+  constructor(public appService: AppService, public apiCallsService: ApiCallsService) {  }
 
   ngOnInit(): void {
+
 
     /*кладем в массив basket ключи из Set basket*/
     this.basket = this.appService.getKeysOfBasket();
@@ -45,19 +46,20 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
 
     /*инициализируем форму по вводу промокода*/
     this.promoForm = new FormGroup({
-      promo: new FormControl('', [Validators.required, this.correctPromo])
+      promo: new FormControl('', [Validators.required/*, this.correctPromo*/])
     });
   }
 
   /*валидатор проверки правильности промокода*/
-  correctPromo(control: FormControl): {[key: string]: boolean} {
-    if (control.value !== 'banana') {
+  /*correctPromo(control: FormControl): {[key: string]: boolean} {
+    debugger
+    if (control.value !== this.promoValue) {
       return {
         invalidPromo: true
       };
     }
     return null;
-  }
+  }*/
 
   /*метод удаления фото из корзины*/
   removePhoto(id) {
@@ -77,6 +79,7 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
 
   /*метод сабмита формы*/
   submitPromo() {
+    debugger
     const formData = {...this.promoForm.value};
     if (this.appService.promoValue === formData.promo) {
       /*пересчет срабатывает только если сумма покупок больше $5*/

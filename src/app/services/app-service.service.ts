@@ -13,6 +13,7 @@ export interface IPhoto {
   providedIn: 'root'
 })
 export class AppService {
+  newPromoValue;
 
   promoValue = '';
 

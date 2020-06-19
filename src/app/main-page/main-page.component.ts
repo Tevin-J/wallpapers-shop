@@ -74,6 +74,13 @@ export class MainPageComponent implements OnInit, OnDestroy {
       })
   }
 
+  setNewPromoValue(value) {
+    this.apiCallsService.changePromo(value)
+      .subscribe(response => {
+        this.appService.setPromoValue(JSON.parse(response));
+      })
+  }
+
   /*метод открытия модалки для данного фото*/
   openPopup(id) {
     this.openedPhoto = this.appService.findById(id);

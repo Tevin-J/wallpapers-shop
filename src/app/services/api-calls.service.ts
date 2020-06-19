@@ -23,6 +23,10 @@ export class ApiCallsService {
     return this.http.get<any>('http://localhost:3000/promo')
   }
 
+  changePromo(value): Observable<any> {
+    return this.http.put<any>('http://localhost:3000/promo', {value})
+  }
+
   addToOrder(orders): Observable<any> {
     return this.http.post<any>('http://localhost:3000/orders', orders);
   }

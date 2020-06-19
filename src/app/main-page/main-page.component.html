@@ -1,4 +1,5 @@
 <div class="main-page-container">
+  <input matInput type="text" placeholder="enter new promo" [(ngModel)]="appService.newPromoValue" (keyup.enter)="setNewPromoValue(appService.newPromoValue)">
   <h1 class="title">Select your wallpaper</h1>
   <div class="grid-container" infiniteScroll [infiniteScrollDistance]="2"
        [infiniteScrollThrottle]="50" (scrolled)="onScroll()">
