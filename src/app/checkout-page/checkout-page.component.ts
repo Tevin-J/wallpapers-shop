@@ -13,8 +13,6 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   /*корзина, получаемая из корзины в appService. та корзина - Set, эта - массив*/
   basket: Array<IPhoto> = [];
 
-  promo = 'banana';
-
   promoForm: FormGroup;
 
   initialCost = 0;
@@ -27,7 +25,11 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
 
   isPurchaseSucceed: number;
 
-  subscription;
+  purchaseSubscription;
+
+  clearOrdersSubscription;
+
+  removeFromOrderSubscription;
 
   constructor(public appService: AppService, public apiCallsService: ApiCallsService) { }
 
@@ -59,26 +61,24 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
 
   /*метод удаления фото из корзины*/
   removePhoto(id) {
-    this.appService.filterBasket(id);
-    this.basket = this.appService.getKeysOfBasket();
-
-    this.apiCallsService.removeFromOrder(id)
+    this.removeFromOrderSubscription = this.apiCallsService.removeFromOrder(id)
       .subscribe(response => {
-        console.log(JSON.parse(response));
-      })
+        this.appService.filterBasket(JSON.parse(response));
+        this.basket = this.appService.getKeysOfBasket();
 
-    /*пересчитываем цену на основе обновленной корзины*/
-    this.initialCost = this.appService.getKeysOfBasket().reduce((acc, val) => {
-      return +acc + +val.price;
-    }, 0);
-    this.isPromoApplied = false;
-    this.finalCost = null;
+        /*пересчитываем цену на основе обновленной корзины*/
+        this.initialCost = this.appService.getKeysOfBasket().reduce((acc, val) => {
+          return +acc + +val.price;
+        }, 0);
+        this.isPromoApplied = false;
+        this.finalCost = null;
+      })
   }
 
   /*метод сабмита формы*/
   submitPromo() {
     const formData = {...this.promoForm.value};
-    if (this.promo === formData.promo) {
+    if (this.appService.promoValue === formData.promo) {
       /*пересчет срабатывает только если сумма покупок больше $5*/
       if (this.initialCost >= 5) {
         this.finalCost = Math.floor(this.initialCost * 0.8);
@@ -91,12 +91,10 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   purchase() {
     this.isPurchaseSucceed = null;
     this.popupIsShowed = true;
-    this.subscription = this.apiCallsService.purchase().subscribe(response => {
+    this.purchaseSubscription = this.apiCallsService.purchase().subscribe(response => {
       if (response === 1) {
-        this.apiCallsService.clearAllOrders()
-          .subscribe(res => {
-            console.log(JSON.parse(res));
-          })
+        this.clearOrdersSubscription = this.apiCallsService.clearAllOrders()
+          .subscribe(res => {})
       }
       this.isPurchaseSucceed = response;
     });
@@ -109,7 +107,11 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+    this.purchaseSubscription.unsubscribe();
+    this.clearOrdersSubscription.unsubscribe();
+    if (this.removeFromOrderSubscription) {
+      this.removeFromOrderSubscription.unsubscribe();
+    }
   }
 
 }

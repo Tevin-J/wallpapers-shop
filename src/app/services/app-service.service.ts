@@ -14,6 +14,8 @@ export interface IPhoto {
 })
 export class AppService {
 
+  promoValue = '';
+
   searchTerm = '';
 
   basket: Set<IPhoto> = new Set();
@@ -28,6 +30,10 @@ export class AppService {
 
   constructor() { }
 
+  setPromoValue(value) {
+    this.promoValue = value
+  }
+
   addLoadedPhotos(photos) {
     this.photos = this.photos.concat(photos);
   }
@@ -39,18 +45,20 @@ export class AppService {
   }
 
   addToBasket(photo) {
-    this.basket.add(photo);
+    let keysArr = [...this.basket.keys()];
+    if (keysArr.every(key => key.id !== photo.id)) {
+      this.basket.add(photo)
+    }
   }
 
   findById(id) {
     return this.photos.find(photo => photo.id === id);
   }
 
-  filterBasket(id) {
-    this.basket.forEach((value, value2, set) => {
-      if (value.id === id) {
-        set.delete(value);
-      }
+  filterBasket(orders) {
+    this.clearBasket();
+    orders.forEach(order => {
+      this.basket.add(order)
     })
   }
 

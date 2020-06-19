@@ -10,13 +10,6 @@ export class ApiCallsService {
   /*номер порции фотографий для загрузки с сервера, с каждым запросом увеличивается на 1*/
   page = 1;
 
-  /*Observable для случайного определения спустя 2 секунды успешности оплаты*/
-  result = new Observable<number>(res => {
-    setTimeout(() => {
-      res.next(Math.round(Math.random()));
-    }, 2000);
-  });
-
   constructor(private http: HttpClient) { }
 
   /*метод запроса с сервера порции фотографий*/
@@ -26,8 +19,11 @@ export class ApiCallsService {
     return this.http.get<any>(`http://localhost:3000/photos?page=${page}`);
   }
 
+  getPromo(): Observable<any> {
+    return this.http.get<any>('http://localhost:3000/promo')
+  }
+
   addToOrder(orders): Observable<any> {
-    debugger
     return this.http.post<any>('http://localhost:3000/orders', orders);
   }
 
@@ -37,7 +33,7 @@ export class ApiCallsService {
 
   /*метод оплаты покупок*/
   purchase(): Observable<number> {
-    return this.result;
+    return this.http.get<any>('http://localhost:3000/purchase')
   }
 
   clearAllOrders(): Observable<any> {

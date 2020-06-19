@@ -30,7 +30,13 @@ export class MainPageComponent implements OnInit, OnDestroy {
     {value: 5}
   ];
 
-  subscription;
+  fetchWallpapersSubscription;
+
+  getPromoSubscription;
+
+  addToBasketFromPopupSubscription;
+
+  addSelectedToBasketSubscription;
 
   constructor(
     public apiCallsService: ApiCallsService,
@@ -39,16 +45,17 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.fetchWallpapers();
+    this.getPromo();
   }
 
   /*метод загрузки фото на страницу через метод сервиса по запросам на сервер. в каждый {} пришедшей
   фотографии добавляем свойства price и isSelected*/
   fetchWallpapers() {
-    this.subscription = this.apiCallsService.fetchWallpapers()
+    this.fetchWallpapersSubscription = this.apiCallsService.fetchWallpapers()
       .subscribe(response => {
         let photos = JSON.parse(response);
-        photos.forEach(p => {
-          p.isSelected = false;
+        photos.forEach(photo => {
+          photo.isSelected = false;
         });
 
         /*добавляем порцию загруженных фото в общий массив фотографий*/
@@ -58,6 +65,13 @@ export class MainPageComponent implements OnInit, OnDestroy {
         данными манипулировать при сортировке*/
         this.appService.addLoadedToFiltered();
       });
+  }
+
+  getPromo() {
+    this.getPromoSubscription = this.apiCallsService.getPromo()
+      .subscribe(response => {
+        this.appService.setPromoValue(response)
+      })
   }
 
   /*метод открытия модалки для данного фото*/
@@ -71,12 +85,13 @@ export class MainPageComponent implements OnInit, OnDestroy {
   }
 
   /*метод добавления {} фотографии в корзину для дальнейшей ее покупки*/
-  addToBasketFromPopup() {
-    this.apiCallsService.addToOrder([this.openedPhoto])
+   addToBasketFromPopup() {
+     this.addToBasketFromPopupSubscription = this.apiCallsService.addToOrder([this.openedPhoto])
       .subscribe(response => {
-        this.appService.addToBasket(this.openedPhoto);
+        let orderedPhoto = JSON.parse(response);
+        this.appService.addToBasket((orderedPhoto)[orderedPhoto.length - 1]);
       });
-    this.closePopup();
+     this.closePopup();
   }
 
   /*метод нажатия на чекбокс у фото - помещение в массив отмеченных товаров для дальнейшего
@@ -94,14 +109,14 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   /*метод добавления фото в корзину. корзина - Set*/
   addToBasket() {
-  debugger
-    this.apiCallsService.addToOrder(this.selectedPhotos)
+    this.addSelectedToBasketSubscription = this.apiCallsService.addToOrder(this.selectedPhotos)
       .subscribe(response => {
-        for (const photo of this.selectedPhotos) {
+        let orderedPhotos = JSON.parse(response);
+        orderedPhotos.forEach(photo => {
           this.appService.addToBasket(photo)
-          this.selectedPhotos = [];
-          this.appService.resetIsSelected();
-        }
+        });
+        this.selectedPhotos = [];
+        this.appService.resetIsSelected();
       })
   }
 
@@ -128,7 +143,13 @@ export class MainPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+    this.fetchWallpapersSubscription.unsubscribe();
+    if (this.addToBasketFromPopupSubscription) {
+      this.addToBasketFromPopupSubscription.unsubscribe()
+    }
+    if (this.addSelectedToBasketSubscription) {
+      this.addSelectedToBasketSubscription.unsubscribe()
+    }
   }
 
 }
