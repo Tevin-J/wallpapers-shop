@@ -13,61 +13,61 @@ export interface IPhoto {
   providedIn: 'root'
 })
 export class AppService {
-  newPromoValue;
+  newPromoValue: string;
 
-  promoValue = '';
+  promoValue: string = '';
 
-  searchTerm = '';
+  searchTerm: string = '';
 
   basket: Set<IPhoto> = new Set();
 
-  photos: Array<IPhoto> = [];
+  photos: IPhoto[] = [];
 
-  filteredByParamsPhotos: Array<IPhoto> = [];
+  filteredByParamsPhotos: IPhoto[] = [];
 
-  filteredByTitlePhotos: Array<IPhoto> = [];
+  filteredByTitlePhotos: IPhoto[] = [];
 
-  filteredPhotos: Array<IPhoto> = [];
+  filteredPhotos: IPhoto[] = [];
 
   constructor() { }
 
-  setPromoValue(value) {
+  setPromoValue(value: string) {
     this.promoValue = value
   }
 
-  addLoadedPhotos(photos) {
+  addLoadedPhotos(photos: IPhoto[]): void {
     this.photos = this.photos.concat(photos);
   }
 
-  addLoadedToFiltered() {
+  addLoadedToFiltered(): void {
     this.filteredPhotos = this.photos;
     this.filteredByTitlePhotos = this.photos;
     this.filteredByParamsPhotos = this.photos;
   }
 
-  addToBasket(photo) {
+  addToBasket(photo: IPhoto): void {
     let keysArr = [...this.basket.keys()];
     if (keysArr.every(key => key.id !== photo.id)) {
       this.basket.add(photo)
     }
   }
 
-  findById(id) {
+  findById(id: number): IPhoto {
     return this.photos.find(photo => photo.id === id);
   }
 
-  filterBasket(orders) {
+  filterBasket(orders: IPhoto[]): void {
     this.clearBasket();
     orders.forEach(order => {
       this.basket.add(order)
     })
   }
 
-  resetIsSelected() {
+  resetIsSelected(): void {
     this.photos.forEach(photo => photo.isSelected = false);
   }
 
-  filteringPhotos(popularityFilterValue, priceFilterValue) {
+  filteringPhotos(popularityFilterValue: number, priceFilterValue: number): void {
     this.filteredByParamsPhotos = this.filteredByTitlePhotos.filter(photo => {
       if (popularityFilterValue) {
         if (photo.price <= priceFilterValue && photo.popularity === popularityFilterValue) {
@@ -79,15 +79,15 @@ export class AppService {
     });
   }
 
-  setFilteredPhotos() {
+  setFilteredPhotos(): void {
     this.filteredPhotos = this.filteredByParamsPhotos;
   }
 
-  getKeysOfBasket() {
+  getKeysOfBasket(): IPhoto[] {
     return [...this.basket.keys()];
   }
 
-  clearBasket() {
+  clearBasket(): void {
     this.basket.clear();
   }
 }

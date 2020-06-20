@@ -16,11 +16,11 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   selectedPhotos = [] as Array<IPhoto>;
 
-  popupIsShowed = false;
+  popupIsShowed: boolean = false;
 
-  priceFilterValue = 10;
+  priceFilterValue: number = 10;
 
-  popularityFilterValue = null;
+  popularityFilterValue = null as number;
 
   stars: Array<IStars> = [
     {value: 1},
@@ -50,10 +50,10 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   /*метод загрузки фото на страницу через метод сервиса по запросам на сервер. в каждый {} пришедшей
   фотографии добавляем свойства price и isSelected*/
-  fetchWallpapers() {
+  fetchWallpapers(): void {
     this.fetchWallpapersSubscription = this.apiCallsService.fetchWallpapers()
       .subscribe(response => {
-        let photos = JSON.parse(response);
+        let photos: IPhoto[] = JSON.parse(response);
         photos.forEach(photo => {
           photo.isSelected = false;
         });
@@ -67,14 +67,14 @@ export class MainPageComponent implements OnInit, OnDestroy {
       });
   }
 
-  getPromo() {
+  getPromo(): void {
     this.getPromoSubscription = this.apiCallsService.getPromo()
       .subscribe(response => {
         this.appService.setPromoValue(response)
       })
   }
 
-  setNewPromoValue(value) {
+  setNewPromoValue(value: string): void {
     this.apiCallsService.changePromo(value)
       .subscribe(response => {
         this.appService.setPromoValue(JSON.parse(response));
@@ -82,20 +82,20 @@ export class MainPageComponent implements OnInit, OnDestroy {
   }
 
   /*метод открытия модалки для данного фото*/
-  openPopup(id) {
+  openPopup(id: number): void {
     this.openedPhoto = this.appService.findById(id);
   }
 
   /*метод закрытия модалки*/
-  closePopup() {
+  closePopup(): void {
     this.openedPhoto = null;
   }
 
   /*метод добавления {} фотографии в корзину для дальнейшей ее покупки*/
-   addToBasketFromPopup() {
+   addToBasketFromPopup(): void {
      this.addToBasketFromPopupSubscription = this.apiCallsService.addToOrder([this.openedPhoto])
       .subscribe(response => {
-        let orderedPhoto = JSON.parse(response);
+        let orderedPhoto: IPhoto[] = JSON.parse(response);
         this.appService.addToBasket((orderedPhoto)[orderedPhoto.length - 1]);
       });
      this.closePopup();
@@ -103,8 +103,8 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   /*метод нажатия на чекбокс у фото - помещение в массив отмеченных товаров для дальнейшего
   их помещения в корзину*/
-  selectPhoto(id) {
-    const updatedSelected = this.selectedPhotos.filter(photo => photo.id !== id);
+  selectPhoto(id: number): void {
+    const updatedSelected: IPhoto[] = this.selectedPhotos.filter(photo => photo.id !== id);
     if (updatedSelected.length === this.selectedPhotos.length) {
       this.appService.findById(id).isSelected = true;
       this.selectedPhotos.push(this.appService.findById(id));
@@ -115,10 +115,10 @@ export class MainPageComponent implements OnInit, OnDestroy {
   }
 
   /*метод добавления фото в корзину. корзина - Set*/
-  addToBasket() {
+  addToBasket(): void {
     this.addSelectedToBasketSubscription = this.apiCallsService.addToOrder(this.selectedPhotos)
       .subscribe(response => {
-        let orderedPhotos = JSON.parse(response);
+        let orderedPhotos: IPhoto[] = JSON.parse(response);
         orderedPhotos.forEach(photo => {
           this.appService.addToBasket(photo)
         });
@@ -128,12 +128,12 @@ export class MainPageComponent implements OnInit, OnDestroy {
   }
 
   /*метод открытия-закрытия окна с настройками фильтрации*/
-  showSettingsPopup() {
+  showSettingsPopup(): void {
     this.popupIsShowed = !this.popupIsShowed;
   }
 
   /*метод фильтрации фото по параметрам*/
-  applyFilters() {
+  applyFilters(): void {
     this.showSettingsPopup();
     this.appService.filteringPhotos(this.popularityFilterValue, this.priceFilterValue);
     this.popularityFilterValue = null;
@@ -141,11 +141,11 @@ export class MainPageComponent implements OnInit, OnDestroy {
   }
 
   /*метод, загружающий новые фото при скролле до конца страницы*/
-  onScroll() {
+  onScroll(): void {
     this.fetchWallpapers();
   }
 
-  onStarFilterValueChanged(event) {
+  onStarFilterValueChanged(event): void {
     this.popularityFilterValue = event.source.value;
   }
 

@@ -11,17 +11,17 @@ import {FormControl, FormGroup, Validators} from '@angular/forms';
 export class CheckoutPageComponent implements OnInit, OnDestroy {
 
   /*корзина, получаемая из корзины в appService. та корзина - Set, эта - массив*/
-  basket: Array<IPhoto> = [];
+  basket: IPhoto[] = [];
 
   promoForm: FormGroup;
 
-  initialCost = 0;
+  initialCost: number = 0;
 
   finalCost: number;
 
-  isPromoApplied = false;
+  isPromoApplied: boolean = false;
 
-  popupIsShowed = false;
+  popupIsShowed: boolean = false;
 
   isPurchaseSucceed: number;
 
@@ -62,7 +62,7 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   }*/
 
   /*метод удаления фото из корзины*/
-  removePhoto(id) {
+  removePhoto(id: number): void {
     this.removeFromOrderSubscription = this.apiCallsService.removeFromOrder(id)
       .subscribe(response => {
         this.appService.filterBasket(JSON.parse(response));
@@ -78,8 +78,7 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   }
 
   /*метод сабмита формы*/
-  submitPromo() {
-    debugger
+  submitPromo(): void {
     const formData = {...this.promoForm.value};
     if (this.appService.promoValue === formData.promo) {
       /*пересчет срабатывает только если сумма покупок больше $5*/
@@ -91,7 +90,7 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   }
 
   /*метод оплаты покупок, на "сервере" случайно определяем успешно ли прошла оплата*/
-  purchase() {
+  purchase(): void {
     this.isPurchaseSucceed = null;
     this.popupIsShowed = true;
     this.purchaseSubscription = this.apiCallsService.purchase().subscribe(response => {
@@ -105,7 +104,7 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
 
   /*если оплата прошла успешно, то при нажатии соответствующей кнопки в модальном окне, вызовется
   данный метод, который очистит корзину и сделает отписку*/
-  clearAll() {
+  clearAll(): void {
     this.appService.clearBasket();
   }
 
