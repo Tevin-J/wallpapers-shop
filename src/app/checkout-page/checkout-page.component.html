@@ -48,20 +48,22 @@
 
 <div class="popup" *ngIf="popupIsShowed">
   <div class="popup-background"></div>
-  <div class="popup-content" *ngIf="isPurchaseSucceed === null">
-    <mat-spinner></mat-spinner>
-  </div>
-  <div class="popup-content" *ngIf="isPurchaseSucceed === 0">
+  <div [ngSwitch]="isPurchaseSucceed" class="popup-content">
+    <ng-template ngSwitchCase="0">
       <h1>Purchase has failed</h1>
       <button mat-raised-button (click)="purchase()">Try again</button>
-  </div>
-  <div class="popup-content" *ngIf="isPurchaseSucceed === 1">
-    <div class="popup-info">
-      <h1>Thank you!</h1>
-      <h3>Payment has passed</h3>
-    </div>
-    <a routerLink="">
-      <button mat-raised-button (click)="clearAll()">Main page</button>
-    </a>
+    </ng-template>
+    <ng-template ngSwitchCase="1">
+      <div class="popup-info">
+        <h1>Thank you!</h1>
+        <h3>Payment has passed</h3>
+      </div>
+      <a routerLink="">
+        <button mat-raised-button (click)="clearAll()">Main page</button>
+      </a>
+    </ng-template>
+    <ng-template ngSwitchDefault>
+      <mat-spinner></mat-spinner>
+    </ng-template>
   </div>
 </div>

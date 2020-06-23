@@ -1,15 +1,19 @@
 <div class="header-container">
-  <div class="search-container" *ngIf="location.path() === ''; else mainPage">
-    <input matInput type="text" [(ngModel)]="appService.searchTerm" placeholder="search wallpaper"
-           (keyup.enter)="searchWallpapersByTitle(appService.searchTerm)">
+  <div [ngSwitch]="href">
+    <ng-template ngSwitchCase="/">
+      <div class="search-container">
+        <input matInput type="text" [(ngModel)]="appService.searchTerm" placeholder="search wallpaper"
+               (keyup.enter)="searchWallpapersByTitle(appService.searchTerm)">
+      </div>
+    </ng-template>
+    <ng-template ngSwitchCase="/checkout">
+      <div class="main-page-button">
+        <a routerLink="/">
+          <button mat-raised-button>Main page</button>
+        </a>
+      </div>
+    </ng-template>
   </div>
-  <ng-template #mainPage>
-    <div class="main-page-button" *ngIf="location.path().includes('/checkout')">
-      <a routerLink="/">
-        <button mat-raised-button>Main page</button>
-      </a>
-    </div>
-  </ng-template>
 
   <div class="basket">
     <img *ngIf="!appService.basket.size; else fullBasket"

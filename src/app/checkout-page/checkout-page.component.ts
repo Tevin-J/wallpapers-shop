@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnChanges, OnDestroy, OnInit, SimpleChanges} from '@angular/core';
 import {AppService, IPhoto} from '../services/app-service.service';
 import {ApiCallsService} from '../services/api-calls.service';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
@@ -31,7 +31,8 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
 
   removeFromOrderSubscription;
 
-  constructor(public appService: AppService, public apiCallsService: ApiCallsService) {  }
+  constructor(public appService: AppService, public apiCallsService: ApiCallsService) {
+  }
 
   ngOnInit(): void {
 
@@ -109,8 +110,12 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.purchaseSubscription.unsubscribe();
-    this.clearOrdersSubscription.unsubscribe();
+    if (this.purchaseSubscription){
+      this.purchaseSubscription.unsubscribe();
+    }
+    if (this.clearOrdersSubscription) {
+      this.clearOrdersSubscription.unsubscribe();
+    }
     if (this.removeFromOrderSubscription) {
       this.removeFromOrderSubscription.unsubscribe();
     }

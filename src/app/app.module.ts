@@ -23,7 +23,7 @@ import {MatSelectModule} from '@angular/material/select';
     AppComponent,
     HeaderComponent,
     MainPageComponent,
-    CheckoutPageComponent
+    CheckoutPageComponent,
   ],
   imports: [
     BrowserModule,

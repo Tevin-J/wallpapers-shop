@@ -1,20 +1,28 @@
-import { Component, OnInit } from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import {AppService} from '../services/app-service.service';
-import {Location} from '@angular/common';
+import {NavigationEnd, Router} from "@angular/router";
+import {filter} from "rxjs/operators";
 
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
-  styleUrls: ['./header.component.css'],
-  providers: [Location]
+  styleUrls: ['./header.component.css']
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
 
-  /*необходим для определения - показывать или нет поисковый инпут*/
-  location: Location;
+  href: string;
 
-  constructor(public appService: AppService, location: Location) {
-    this.location = location;
+  routerChangingSubscription;
+
+  constructor(public appService: AppService, private router: Router) {
+    /*подписываемся на изменение url, чтоб в зависимости от его значения отрисовывать
+    в header либо инпут для фильтрации картинок по названию, либо кнопку для перехода
+    на главную страницу*/
+    this.routerChangingSubscription = router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: NavigationEnd) => {
+      this.href = event.url;
+    });
   }
 
   ngOnInit(): void {
@@ -30,5 +38,11 @@ export class HeaderComponent implements OnInit {
       }
     });
     this.appService.filteredPhotos = this.appService.filteredByTitlePhotos;
+  }
+
+  ngOnDestroy(): void {
+    if (this.routerChangingSubscription) {
+      this.routerChangingSubscription.unsubscribe();
+    }
   }
 }
