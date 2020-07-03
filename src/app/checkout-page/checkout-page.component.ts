@@ -15,17 +15,19 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
 
   promoForm: FormGroup;
 
-  initialCost: number = 0;
+  initialCost = 0;
 
   finalCost: number;
 
-  isPromoApplied: boolean = false;
+  isPromoApplied = false;
 
-  popupIsShowed: boolean = false;
+  popupIsShowed = false;
 
   isPurchaseSucceed: number;
 
   purchaseSubscription;
+
+  makeOrderSubscription;
 
   clearOrdersSubscription;
 
@@ -63,19 +65,28 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   }*/
 
   /*метод удаления фото из корзины*/
-  removePhoto(id: number): void {
-    this.removeFromOrderSubscription = this.apiCallsService.removeFromOrder(id)
+  removePhoto(id: string): void {
+    /*this.removeFromOrderSubscription = this.apiCallsService.removeFromOrder(id)
       .subscribe(response => {
         this.appService.filterBasket(JSON.parse(response));
         this.basket = this.appService.getKeysOfBasket();
 
-        /*пересчитываем цену на основе обновленной корзины*/
+        /!*пересчитываем цену на основе обновленной корзины*!/
         this.initialCost = this.appService.getKeysOfBasket().reduce((acc, val) => {
           return +acc + +val.price;
         }, 0);
         this.isPromoApplied = false;
         this.finalCost = null;
-      })
+      })*/
+    this.appService.removePhotoFromBasket(id);
+    this.basket = this.appService.getKeysOfBasket();
+
+    /*пересчитываем цену на основе обновленной корзины*/
+    this.initialCost = this.basket.reduce((acc, val) => {
+      return +acc + +val.price;
+    }, 0);
+    this.isPromoApplied = false;
+    this.finalCost = null;
   }
 
   /*метод сабмита формы*/
@@ -92,12 +103,20 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
 
   /*метод оплаты покупок, на "сервере" случайно определяем успешно ли прошла оплата*/
   purchase(): void {
-    this.isPurchaseSucceed = null;
+    /*this.isPurchaseSucceed = null;
     this.popupIsShowed = true;
     this.purchaseSubscription = this.apiCallsService.purchase().subscribe(response => {
       if (response === 1) {
         this.clearOrdersSubscription = this.apiCallsService.clearAllOrders()
           .subscribe(res => {})
+      }
+      this.isPurchaseSucceed = response;
+    });*/
+    this.isPurchaseSucceed = null;
+    this.popupIsShowed = true;
+    this.purchaseSubscription = this.apiCallsService.purchase().subscribe(response => {
+      if (response === 1) {
+
       }
       this.isPurchaseSucceed = response;
     });

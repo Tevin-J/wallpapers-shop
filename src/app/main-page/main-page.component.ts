@@ -2,8 +2,11 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ApiCallsService} from '../services/api-calls.service';
 import {AppService, IPhoto} from '../services/app-service.service';
 
-interface IStars {
-  value: number;
+interface IColor {
+  value: string;
+}
+interface IOrientation {
+  value: string;
 }
 @Component({
   selector: 'app-main-page',
@@ -14,25 +17,37 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   openedPhoto = null as IPhoto;
 
-  selectedPhotos = [] as Array<IPhoto>;
+  selectedPhotos = [] as IPhoto[];
 
   popupIsShowed: boolean = false;
 
-  priceFilterValue: number = 10;
+  priceFilterValue: number = 100;
 
-  popularityFilterValue = null as number;
+  colorFilterValue = null as string;
 
-  stars: Array<IStars> = [
-    {value: 1},
-    {value: 2},
-    {value: 3},
-    {value: 4},
-    {value: 5}
+  orientationFilterValue = null as string;
+
+  colors: IColor[] = [
+    {value: 'black_and_white'},
+    {value: 'black'},
+    {value: 'white'},
+    {value: 'yellow'},
+    {value: 'orange'},
+    {value: 'red'},
+    {value: 'purple'},
+    {value: 'magenta'},
+    {value: 'green'},
+    {value: 'teal'},
+    {value: 'blue'}
+  ];
+
+  orientations: IOrientation[] = [
+    {value: 'landscape'},
+    {value: 'portrait'},
+    {value: 'squarish'}
   ];
 
   fetchWallpapersSubscription;
-
-  getPromoSubscription;
 
   addToBasketFromPopupSubscription;
 
@@ -45,44 +60,35 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.fetchWallpapers();
-    this.getPromo();
+    this.initializeBasket();
   }
 
   /*метод загрузки фото на страницу через метод сервиса по запросам на сервер. в каждый {} пришедшей
-  фотографии добавляем свойства price и isSelected*/
+  фотографии добавляем свойство isSelected*/
   fetchWallpapers(): void {
     this.fetchWallpapersSubscription = this.apiCallsService.fetchWallpapers()
       .subscribe(response => {
-        let photos: IPhoto[] = JSON.parse(response);
+        const photos: IPhoto[] = JSON.parse(response);
         photos.forEach(photo => {
           photo.isSelected = false;
         });
 
-        /*добавляем порцию загруженных фото в общий массив фотографий*/
+        // добавляем порцию загруженных фото в общий массив фотографий
         this.appService.addLoadedPhotos(photos);
 
-        /*заполняем массивы отсортированных фото общим массивом фото, чтоб в дальнейшем этими
-        данными манипулировать при сортировке*/
+        // заполняем массивы отсортированных фото общим массивом фото, чтоб в дальнейшем этими
+        // данными манипулировать при сортировке
         this.appService.addLoadedToFiltered();
       });
   }
 
-  getPromo(): void {
-    this.getPromoSubscription = this.apiCallsService.getPromo()
-      .subscribe(response => {
-        this.appService.setPromoValue(response)
-      })
-  }
-
-  setNewPromoValue(value: string): void {
-    this.apiCallsService.changePromo(value)
-      .subscribe(response => {
-        this.appService.setPromoValue(JSON.parse(response));
-      })
+  /*initial getting photos to basket from local storage*/
+  initializeBasket(): void {
+    this.appService.initializeBasket();
   }
 
   /*метод открытия модалки для данного фото*/
-  openPopup(id: number): void {
+  openPopup(id: string): void {
     this.openedPhoto = this.appService.findById(id);
   }
 
@@ -93,17 +99,19 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   /*метод добавления {} фотографии в корзину для дальнейшей ее покупки*/
    addToBasketFromPopup(): void {
-     this.addToBasketFromPopupSubscription = this.apiCallsService.addToOrder([this.openedPhoto])
+     this.appService.addToBasket(this.openedPhoto);
+
+     /*this.addToBasketFromPopupSubscription = this.apiCallsService.addToOrder([this.openedPhoto])
       .subscribe(response => {
         let orderedPhoto: IPhoto[] = JSON.parse(response);
         this.appService.addToBasket((orderedPhoto)[orderedPhoto.length - 1]);
-      });
+      });*/
      this.closePopup();
   }
 
   /*метод нажатия на чекбокс у фото - помещение в массив отмеченных товаров для дальнейшего
   их помещения в корзину*/
-  selectPhoto(id: number): void {
+  selectPhoto(id: string): void {
     const updatedSelected: IPhoto[] = this.selectedPhotos.filter(photo => photo.id !== id);
     if (updatedSelected.length === this.selectedPhotos.length) {
       this.appService.findById(id).isSelected = true;
@@ -116,7 +124,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   /*метод добавления фото в корзину. корзина - Set*/
   addToBasket(): void {
-    this.addSelectedToBasketSubscription = this.apiCallsService.addToOrder(this.selectedPhotos)
+    /*this.addSelectedToBasketSubscription = this.apiCallsService.addToOrder(this.selectedPhotos)
       .subscribe(response => {
         let orderedPhotos: IPhoto[] = JSON.parse(response);
         orderedPhotos.forEach(photo => {
@@ -124,7 +132,12 @@ export class MainPageComponent implements OnInit, OnDestroy {
         });
         this.selectedPhotos = [];
         this.appService.resetIsSelected();
-      })
+      })*/
+    this.selectedPhotos.forEach(photo => {
+      this.appService.addToBasket(photo);
+    });
+    this.selectedPhotos = [];
+    this.appService.resetIsSelected();
   }
 
   /*метод открытия-закрытия окна с настройками фильтрации*/
@@ -135,27 +148,41 @@ export class MainPageComponent implements OnInit, OnDestroy {
   /*метод фильтрации фото по параметрам*/
   applyFilters(): void {
     this.showSettingsPopup();
-    this.appService.filteringPhotos(this.popularityFilterValue, this.priceFilterValue);
+    this.apiCallsService.searchByParams(this.priceFilterValue, this.colorFilterValue, this.orientationFilterValue, this.appService.searchTerm);
+    console.log(this.orientationFilterValue, this.colorFilterValue, this.priceFilterValue, this.appService.searchTerm);
+    this.colorFilterValue = null;
+    this.orientationFilterValue = null;
+    /*this.appService.filteringPhotos(this.popularityFilterValue, this.priceFilterValue);
     this.popularityFilterValue = null;
-    this.appService.setFilteredPhotos();
+    this.appService.setFilteredPhotos();*/
   }
 
   /*метод, загружающий новые фото при скролле до конца страницы*/
   onScroll(): void {
+    /*if (this.appService.basicScrollMode) {
+      this.fetchWallpapers();
+    }*/
     this.fetchWallpapers();
   }
 
-  onStarFilterValueChanged(event): void {
-    this.popularityFilterValue = event.source.value;
+  onColorFilterValueChanged(event): void {
+    this.colorFilterValue = event.source.value;
+  }
+
+  onOrientationFilterValueChanged(event): void {
+    this.orientationFilterValue = event.source.value;
   }
 
   ngOnDestroy(): void {
+    if (this.fetchWallpapersSubscription) {
+      this.fetchWallpapersSubscription.unsubscribe();
+    }
     this.fetchWallpapersSubscription.unsubscribe();
     if (this.addToBasketFromPopupSubscription) {
-      this.addToBasketFromPopupSubscription.unsubscribe()
+      this.addToBasketFromPopupSubscription.unsubscribe();
     }
     if (this.addSelectedToBasketSubscription) {
-      this.addSelectedToBasketSubscription.unsubscribe()
+      this.addSelectedToBasketSubscription.unsubscribe();
     }
   }
 

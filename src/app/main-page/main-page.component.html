@@ -1,11 +1,9 @@
 <div class="main-page-container">
-  <input matInput type="text" placeholder="enter new promo" [(ngModel)]="appService.newPromoValue" (keyup.enter)="setNewPromoValue(appService.newPromoValue)">
   <h1 class="title">Select your wallpaper</h1>
   <div class="grid-container" infiniteScroll [infiniteScrollDistance]="2"
        [infiniteScrollThrottle]="50" (scrolled)="onScroll()">
-      <div class="wallpaper" *ngFor="let photo of appService.filteredPhotos">
-        <img src="{{photo.url}}" alt="{{photo.title}}"
-             (click)="openPopup(photo.id)">
+      <div class="wallpaper" *ngFor="let photo of appService.photos">
+        <img src="{{photo.urlSmall}}" (click)="openPopup(photo.id)">
         <div class="price-container">
           <mat-checkbox class="select-checkbox" (change)="selectPhoto(photo.id)"
                         type="checkbox" [checked]="photo.isSelected"></mat-checkbox>
@@ -19,7 +17,7 @@
 <div class="popup" *ngIf="openedPhoto">
   <div class="popup-background" (click)="closePopup()"></div>
   <div class="popup-content">
-    <img src="{{openedPhoto.url}}" alt="{{openedPhoto.title}}">
+    <img src="{{openedPhoto.urlRegular}}">
     <button mat-raised-button (click)="addToBasketFromPopup()">Buy</button>
   </div>
 </div>
@@ -34,16 +32,27 @@
     <div>
       <div>
         <h4>Price</h4>
-        <mat-slider thumbLabel tickInterval="1" min="1" max="10"
+        <mat-slider thumbLabel tickInterval="1" min="1" max="100"
                     [(ngModel)]="priceFilterValue"></mat-slider>
       </div>
       <div>
-        <h4>Popularity</h4>
+        <h4>Color</h4>
         <mat-form-field>
-          <mat-label>Stars</mat-label>
+          <mat-label>value</mat-label>
           <mat-select>
-            <mat-option *ngFor="let star of stars" [value]="star.value" (onSelectionChange)="onStarFilterValueChanged($event)">
-              {{star.value}}
+            <mat-option *ngFor="let color of colors" [value]="color.value" (onSelectionChange)="onColorFilterValueChanged($event)">
+              {{color.value}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div>
+        <h4>Orientation</h4>
+        <mat-form-field>
+          <mat-label>value</mat-label>
+          <mat-select>
+            <mat-option *ngFor="let orientation of orientations" [value]="orientation.value" (onSelectionChange)="onOrientationFilterValueChanged($event)">
+              {{orientation.value}}
             </mat-option>
           </mat-select>
         </mat-form-field>

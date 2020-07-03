@@ -1,13 +1,22 @@
 import { Injectable } from '@angular/core';
 
 export interface IPhoto {
-  title: string;
-  description: string;
-  id: number;
-  url: string;
+  description: string | null;
+  id: string;
+  urlRegular: string;
+  urlSmall: string;
   price: number;
   isSelected: boolean;
-  popularity: number;
+}
+
+export interface IOrder {
+  cost: number;
+  items: IItem[];
+}
+
+export interface IItem {
+  id: string;
+  url: string;
 }
 @Injectable({
   providedIn: 'root'
@@ -15,9 +24,9 @@ export interface IPhoto {
 export class AppService {
   newPromoValue: string;
 
-  promoValue: string = '';
+  promoValue = '';
 
-  searchTerm: string = '';
+  searchTerm = '';
 
   basket: Set<IPhoto> = new Set();
 
@@ -29,10 +38,16 @@ export class AppService {
 
   filteredPhotos: IPhoto[] = [];
 
+  basicScrollMode = null as boolean;
+
+  byTitleScrollMode = null as boolean;
+
+  byParamsScrollMode = null as boolean;
+
   constructor() { }
 
   setPromoValue(value: string) {
-    this.promoValue = value
+    this.promoValue = value;
   }
 
   addLoadedPhotos(photos: IPhoto[]): void {
@@ -45,22 +60,49 @@ export class AppService {
     this.filteredByParamsPhotos = this.photos;
   }
 
-  addToBasket(photo: IPhoto): void {
-    let keysArr = [...this.basket.keys()];
-    if (keysArr.every(key => key.id !== photo.id)) {
-      this.basket.add(photo)
-    }
+  initializeBasket(): void {
+    const photosFromLocalStorage = JSON.parse(localStorage.getItem('photos to order'));
+    photosFromLocalStorage.forEach(photo => {
+      const keysArr = [...this.basket.keys()];
+      if (keysArr.every(key => key.id !== photo.id)) {
+        this.basket.add(photo);
+      }
+    });
   }
 
-  findById(id: number): IPhoto {
+  addToBasket(photo: IPhoto): void {
+    const keysArr = [...this.basket.keys()];
+    if (keysArr.every(key => key.id !== photo.id)) {
+      this.basket.add(photo);
+    }
+    this.updateLocalStorage([...this.basket.values()]);
+  }
+
+  updateLocalStorage(photos: IPhoto[]): void {
+    localStorage.setItem('photos to order', JSON.stringify(photos));
+  }
+
+  removePhotoFromBasket(id: string): void {
+    let desiredPhoto: IPhoto;
+    for (const photo of this.basket) {
+      if (photo.id === id) {
+        desiredPhoto = photo;
+      }
+    }
+    this.basket.delete(desiredPhoto);
+    localStorage.clear();
+    this.updateLocalStorage([...this.basket.values()]);
+  }
+
+  findById(id: string): IPhoto {
     return this.photos.find(photo => photo.id === id);
   }
 
   filterBasket(orders: IPhoto[]): void {
     this.clearBasket();
     orders.forEach(order => {
-      this.basket.add(order)
-    })
+      this.basket.add(order);
+    });
   }
 
   resetIsSelected(): void {
@@ -68,7 +110,7 @@ export class AppService {
   }
 
   filteringPhotos(popularityFilterValue: number, priceFilterValue: number): void {
-    this.filteredByParamsPhotos = this.filteredByTitlePhotos.filter(photo => {
+    /*this.filteredByParamsPhotos = this.filteredByTitlePhotos.filter(photo => {
       if (popularityFilterValue) {
         if (photo.price <= priceFilterValue && photo.popularity === popularityFilterValue) {
           return photo;
@@ -76,7 +118,7 @@ export class AppService {
       } else {
         return photo.price <= priceFilterValue;
       }
-    });
+    });*/
   }
 
   setFilteredPhotos(): void {
