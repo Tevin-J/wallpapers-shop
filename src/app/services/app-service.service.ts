@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import {ApiCallsService} from './api-calls.service';
 
 export interface IPhoto {
   description: string | null;
@@ -28,6 +29,12 @@ export class AppService {
 
   searchTerm = '';
 
+  priceFilterValue;
+
+  colorFilterValue;
+
+  orientationFilterValue;
+
   basket: Set<IPhoto> = new Set();
 
   photos: IPhoto[] = [];
@@ -38,16 +45,41 @@ export class AppService {
 
   filteredPhotos: IPhoto[] = [];
 
-  basicScrollMode = null as boolean;
-
-  byTitleScrollMode = null as boolean;
-
-  byParamsScrollMode = null as boolean;
-
-  constructor() { }
+  constructor(public apiCallsService: ApiCallsService) { }
 
   setPromoValue(value: string) {
     this.promoValue = value;
+  }
+
+  getPhotos() {
+    this.photos = [];
+    this.getScrolledPhotos();
+  }
+
+  getScrolledPhotos() {
+    if (!this.searchTerm && !this.priceFilterValue && !this.colorFilterValue && !this.orientationFilterValue) {
+      this.apiCallsService.fetchWallpapers()
+        .subscribe(response => {
+          const photos: IPhoto[] = JSON.parse(response);
+          photos.forEach(photo => {
+            photo.isSelected = false;
+          });
+
+          // добавляем порцию загруженных фото в общий массив фотографий
+          this.addLoadedPhotos(photos);
+        });
+    } else {
+      this.apiCallsService.searchPhotos(this.priceFilterValue, this.colorFilterValue, this.orientationFilterValue, this.searchTerm)
+        .subscribe(response => {
+          const photos: IPhoto[] = JSON.parse(response);
+          photos.forEach(photo => {
+            photo.isSelected = false;
+          });
+
+          // добавляем порцию загруженных фото в общий массив фотографий
+          this.addLoadedPhotos(photos);
+        });
+    }
   }
 
   addLoadedPhotos(photos: IPhoto[]): void {

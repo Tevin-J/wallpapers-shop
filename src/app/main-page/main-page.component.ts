@@ -59,8 +59,9 @@ export class MainPageComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.fetchWallpapers();
+    /*this.fetchWallpapers();*/
     this.initializeBasket();
+    this.appService.getPhotos();
   }
 
   /*метод загрузки фото на страницу через метод сервиса по запросам на сервер. в каждый {} пришедшей
@@ -148,10 +149,14 @@ export class MainPageComponent implements OnInit, OnDestroy {
   /*метод фильтрации фото по параметрам*/
   applyFilters(): void {
     this.showSettingsPopup();
-    this.apiCallsService.searchByParams(this.priceFilterValue, this.colorFilterValue, this.orientationFilterValue, this.appService.searchTerm);
-    console.log(this.orientationFilterValue, this.colorFilterValue, this.priceFilterValue, this.appService.searchTerm);
-    this.colorFilterValue = null;
-    this.orientationFilterValue = null;
+    this.appService.getPhotos();
+    /*this.apiCallsService.searchPhotos(this.priceFilterValue, this.colorFilterValue, this.orientationFilterValue, this.appService.searchTerm)
+      .subscribe(response => {
+        this.appService.photos = JSON.parse(response);
+      });*/
+    console.log(this.appService.orientationFilterValue, this.appService.colorFilterValue, this.appService.priceFilterValue, this.appService.searchTerm);
+    /*this.colorFilterValue = null;
+    this.orientationFilterValue = null;*/
     /*this.appService.filteringPhotos(this.popularityFilterValue, this.priceFilterValue);
     this.popularityFilterValue = null;
     this.appService.setFilteredPhotos();*/
@@ -162,15 +167,16 @@ export class MainPageComponent implements OnInit, OnDestroy {
     /*if (this.appService.basicScrollMode) {
       this.fetchWallpapers();
     }*/
-    this.fetchWallpapers();
+    /*this.fetchWallpapers();*/
+    this.appService.getScrolledPhotos();
   }
 
   onColorFilterValueChanged(event): void {
-    this.colorFilterValue = event.source.value;
+    this.appService.colorFilterValue = event.source.value;
   }
 
   onOrientationFilterValueChanged(event): void {
-    this.orientationFilterValue = event.source.value;
+    this.appService.orientationFilterValue = event.source.value;
   }
 
   ngOnDestroy(): void {
