@@ -1,7 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {AppService} from '../services/app-service.service';
-import {NavigationEnd, Router} from "@angular/router";
-import {filter} from "rxjs/operators";
+import {NavigationEnd, Router} from '@angular/router';
+import {filter} from 'rxjs/operators';
 import {ApiCallsService} from '../services/api-calls.service';
 
 @Component({
@@ -12,8 +12,10 @@ import {ApiCallsService} from '../services/api-calls.service';
 export class HeaderComponent implements OnInit, OnDestroy {
 
   href: string;
-
+  term: string;
   routerChangingSubscription;
+
+  getPhotosSubscription;
 
   searchByTitleSubscription;
 
@@ -32,8 +34,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   /*метод поиска картинок по введеному в инпут значению*/
-  searchWallpapersByTitle(term: string): void {
-    if (term) {
+  searchWallpapersByTitle(): void {
+
+    this.getPhotosSubscription = this.appService.activeFilters.next({ searchTerm: this.term });
+    /*if (term) {
       this.searchByTitleSubscription = this.apiCallsService.searchByTitle(term)
         .subscribe(response => {
           this.appService.photos = JSON.parse(response);
@@ -43,7 +47,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         .subscribe(response => {
           this.appService.photos = JSON.parse(response);
         });
-    }
+    }*/
 
     /*this.appService.filteredByTitlePhotos = this.appService.photos.filter(p => {
       if (p.description) {
@@ -58,6 +62,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.routerChangingSubscription) {
       this.routerChangingSubscription.unsubscribe();
+    }
+    if (this.getPhotosSubscription) {
+      this.getPhotosSubscription.unsubscribe();
     }
     /*if (this.searchByTitleSubscription) {
       this.searchByTitleSubscription.unsubscribe();

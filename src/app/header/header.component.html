@@ -2,8 +2,8 @@
   <div [ngSwitch]="href">
     <ng-template ngSwitchCase="/">
       <div class="search-container">
-        <input matInput type="text" [(ngModel)]="appService.searchTerm" placeholder="search wallpaper"
-               (keyup.enter)="searchWallpapersByTitle(appService.searchTerm)">
+        <input matInput type="text" [(ngModel)]="term" placeholder="search wallpaper"
+               (keyup.enter)="searchWallpapersByTitle()">
       </div>
     </ng-template>
     <ng-template ngSwitchCase="/checkout">

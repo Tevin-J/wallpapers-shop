@@ -1,6 +1,7 @@
 import {Component, OnDestroy, OnInit} from '@angular/core';
 import {ApiCallsService} from '../services/api-calls.service';
 import {AppService, IPhoto} from '../services/app-service.service';
+import {Observable} from 'rxjs';
 
 interface IColor {
   value: string;
@@ -19,13 +20,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   selectedPhotos = [] as IPhoto[];
 
-  popupIsShowed: boolean = false;
-
-  priceFilterValue: number = 100;
-
-  colorFilterValue = null as string;
-
-  orientationFilterValue = null as string;
+  popupIsShowed = false;
 
   colors: IColor[] = [
     {value: 'black_and_white'},
@@ -47,6 +42,12 @@ export class MainPageComponent implements OnInit, OnDestroy {
     {value: 'squarish'}
   ];
 
+  getPhotosSubscription;
+
+  getScrolledPhotosSubscription;
+
+  applyFiltersSubscription;
+
   fetchWallpapersSubscription;
 
   addToBasketFromPopupSubscription;
@@ -59,14 +60,13 @@ export class MainPageComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    /*this.fetchWallpapers();*/
     this.initializeBasket();
-    this.appService.getPhotos();
+    this.getPhotos();
   }
 
   /*метод загрузки фото на страницу через метод сервиса по запросам на сервер. в каждый {} пришедшей
   фотографии добавляем свойство isSelected*/
-  fetchWallpapers(): void {
+ /* fetchWallpapers(): void {
     this.fetchWallpapersSubscription = this.apiCallsService.fetchWallpapers()
       .subscribe(response => {
         const photos: IPhoto[] = JSON.parse(response);
@@ -80,6 +80,13 @@ export class MainPageComponent implements OnInit, OnDestroy {
         // заполняем массивы отсортированных фото общим массивом фото, чтоб в дальнейшем этими
         // данными манипулировать при сортировке
         this.appService.addLoadedToFiltered();
+      });
+  }*/
+
+  getPhotos(): void {
+    this.getPhotosSubscription = this.appService.getPhotos$
+      .subscribe(response => {
+        console.log(response);
       });
   }
 
@@ -149,7 +156,8 @@ export class MainPageComponent implements OnInit, OnDestroy {
   /*метод фильтрации фото по параметрам*/
   applyFilters(): void {
     this.showSettingsPopup();
-    this.appService.getPhotos();
+    this.applyFiltersSubscription = this.appService.getPhotos$
+      .subscribe(response => {});
     /*this.apiCallsService.searchPhotos(this.priceFilterValue, this.colorFilterValue, this.orientationFilterValue, this.appService.searchTerm)
       .subscribe(response => {
         this.appService.photos = JSON.parse(response);
@@ -168,7 +176,8 @@ export class MainPageComponent implements OnInit, OnDestroy {
       this.fetchWallpapers();
     }*/
     /*this.fetchWallpapers();*/
-    this.appService.getScrolledPhotos();
+    this.getScrolledPhotosSubscription = this.appService.getPhotos$
+      .subscribe(response => {});
   }
 
   onColorFilterValueChanged(event): void {
@@ -180,7 +189,16 @@ export class MainPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.fetchWallpapersSubscription) {
+    if (this.getPhotosSubscription) {
+      this.getPhotosSubscription.unsubscribe();
+    }
+    if (this.getScrolledPhotosSubscription) {
+      this.getScrolledPhotosSubscription.unsubscribe();
+    }
+    if (this.applyFiltersSubscription) {
+      this.applyFiltersSubscription.unsubscribe();
+    }
+   /* if (this.fetchWallpapersSubscription) {
       this.fetchWallpapersSubscription.unsubscribe();
     }
     this.fetchWallpapersSubscription.unsubscribe();
@@ -189,7 +207,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
     }
     if (this.addSelectedToBasketSubscription) {
       this.addSelectedToBasketSubscription.unsubscribe();
-    }
+    }*/
   }
 
 }
