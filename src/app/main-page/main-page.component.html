@@ -27,13 +27,13 @@
   <img src="../../assets/img/settings.svg" alt="settings" (click)="showSettingsPopup()">
 </div>
 <ng-template #settingsPopup>
-  <div class="settings-popup" *ngIf="appService.searchTerm">
+  <div class="settings-popup">
     <h3>Filters</h3>
     <div>
       <div>
         <h4>Price</h4>
         <mat-slider thumbLabel tickInterval="1" min="1" max="1000"
-                    [(ngModel)]="appService.priceFilterValue"></mat-slider>
+                    [(ngModel)]="price"></mat-slider>
       </div>
       <div>
         <h4>Color</h4>

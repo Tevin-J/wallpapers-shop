@@ -43,127 +43,75 @@ export interface IParams {
 export class AppService {
 
   promoValue = '';
-
-  searchTerm = '';
-
-  priceFilterValue;
-
-  colorFilterValue;
-
-  orientationFilterValue;
-
   page = 1;
-
   basket: Set<IPhoto> = new Set();
-
   photos: IPhoto[] = [];
-  getPhotos$: Observable<any>;
+  getPhotos$: Observable<IPhoto[]>;
   activeFilters: BehaviorSubject<IFilters>;
 
   constructor(public apiCallsService: ApiCallsService) {
     this.activeFilters = new BehaviorSubject(
-      {searchTerm: this.searchTerm, price: this.priceFilterValue, color: this.colorFilterValue, orientation: this.orientationFilterValue}
+      {color: undefined, price: undefined, orientation: undefined, searchTerm: undefined}
     );
     this.getPhotos$ = this.activeFilters.asObservable()
       .pipe(
         pairwise(),
         switchMap((filters: IFilters[], index): ObservableInput<any> => {
-          console.log(filters);
+          const params: IParams = {page: this.page};
+          if (filters[1].searchTerm) {
+            params.term = filters[1].searchTerm;
+          } else {
+            filters[1].searchTerm = filters[0].searchTerm;
+            params.term = filters[0].searchTerm;
+          }
+          if (filters[1].price) {
+            params.price = filters[1].price;
+          }
+          if (filters[1].color) {
+            params.color = filters[1].color;
+          }
+          if (filters[1].orientation) {
+            params.orientation = filters[1].orientation;
+          }
           if (filters[0].color !== filters[1].color || filters[0].orientation !== filters[1].orientation ||
             filters[0].searchTerm !== filters[1].searchTerm || filters[0].price !== filters[1].price) {
             this.page = 1;
           } else {
-            this.page++;
+            ++this.page;
           }
-          const params: IParams = {page: this.page};
-          if (this.searchTerm) {
-            params.term = this.searchTerm;
-          }
-          if (this.priceFilterValue) {
-            params.price = this.priceFilterValue;
-          }
-          if (this.colorFilterValue) {
-            params.color = this.colorFilterValue;
-          }
-          if (this.orientationFilterValue) {
-            params.orientation = this.orientationFilterValue;
-          }
-          if (!params.term) {
-            this.colorFilterValue = null;
-            this.orientationFilterValue = null;
-            this.priceFilterValue = 1000;
-          }
-          if (!params.term && !params.price && !params.color && !params.orientation) {
-            return this.apiCallsService.fetchWallpapers(this.page);
-          } else {
-            return this.apiCallsService.searchPhotos(params);
-          }
+          params.page = this.page;
+          console.log(params);
+          console.log(filters);
+          return this.apiCallsService.searchPhotos(params);
         }),
-        tap(photos => {
+        tap(response => {
+          const photos = JSON.parse(response);
           photos.forEach(photo => {
             photo.isSelected = false;
           });
-          if (this.page === 1) {
-            this.photos = photos;
-          } else {
-            this.addLoadedPhotos(photos);
-          }
+          this.addLoadedPhotos(photos);
         })
       );
   }
-  /*getPhotos() {
-    this.page = 1;
-    this.photos = [];
-    return this.getScrolledPhotos();
-  }
-
-  getScrolledPhotos() {
-    this.page++;
-    if (!this.searchTerm) {
-      this.orientationFilterValue = null;
-      this.colorFilterValue = null;
-      return this.apiCallsService.fetchWallpapers(this.page)
-        .pipe(
-          map(response => {
-            const photos: IPhoto[] = JSON.parse(response);
-            photos.forEach(photo => {
-              photo.isSelected = false;
-            });
-
-            // добавляем порцию загруженных фото в общий массив фотографий
-            this.addLoadedPhotos(photos);
-            return photos;
-          })
-        );
-    } else {
-      return this.apiCallsService.searchPhotos(this.priceFilterValue, this.colorFilterValue, this.orientationFilterValue, this.searchTerm, this.page)
-        .pipe(
-          map(response => {
-            const photos: IPhoto[] = JSON.parse(response);
-            photos.forEach(photo => {
-              photo.isSelected = false;
-            });
-
-            // добавляем порцию загруженных фото в общий массив фотографий
-            this.addLoadedPhotos(photos);
-            return photos;
-          })
-        );
-    }
-  }*/
 
   addLoadedPhotos(photos: IPhoto[]): void {
-    this.photos = this.photos.concat(photos);
+    if (this.page === 1) {
+      this.photos = photos;
+    } else {
+      this.photos = this.photos.concat(photos);
+    }
   }
 
   initializeBasket(): void {
-    const photosFromLocalStorage = JSON.parse(localStorage.getItem('photos to order'));
-    photosFromLocalStorage.forEach(photo => {
-      const keysArr = [...this.basket.keys()];
-      if (keysArr.every(key => key.id !== photo.id)) {
-        this.basket.add(photo);
-      }
-    });
+    if (localStorage.getItem('photos to order')) {
+      const photosFromLocalStorage = JSON.parse(localStorage.getItem('photos to order'));
+      photosFromLocalStorage.forEach(photo => {
+        const keysArr = [...this.basket.keys()];
+        if (keysArr.every(key => key.id !== photo.id)) {
+          this.basket.add(photo);
+        }
+      });
+    }
   }
 
   addToBasket(photo: IPhoto): void {

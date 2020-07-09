@@ -36,7 +36,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   /*метод поиска картинок по введеному в инпут значению*/
   searchWallpapersByTitle(): void {
 
-    this.getPhotosSubscription = this.appService.activeFilters.next({ searchTerm: this.term });
+    this.getPhotosSubscription = this.appService.activeFilters.next({ color: undefined, price: undefined, orientation: undefined, searchTerm: this.term });
     /*if (term) {
       this.searchByTitleSubscription = this.apiCallsService.searchByTitle(term)
         .subscribe(response => {

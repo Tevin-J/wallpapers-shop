@@ -2,6 +2,8 @@ import {Component, OnChanges, OnDestroy, OnInit, SimpleChanges} from '@angular/c
 import {AppService, IPhoto} from '../services/app-service.service';
 import {ApiCallsService} from '../services/api-calls.service';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {filter, switchMap, tap} from 'rxjs/operators';
+import {ObservableInput} from 'rxjs';
 
 @Component({
   selector: 'app-checkout-page',
@@ -101,25 +103,38 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  /*метод оплаты покупок, на "сервере" случайно определяем успешно ли прошла оплата*/
+  /*method to purchase order. if success - calling makeOrder method*/
   purchase(): void {
-    /*this.isPurchaseSucceed = null;
-    this.popupIsShowed = true;
-    this.purchaseSubscription = this.apiCallsService.purchase().subscribe(response => {
-      if (response === 1) {
-        this.clearOrdersSubscription = this.apiCallsService.clearAllOrders()
-          .subscribe(res => {})
-      }
-      this.isPurchaseSucceed = response;
-    });*/
+    const photosToOrder = [];
+    this.basket.forEach(photo => {
+      const photoObj = {
+        id: photo.id,
+        url: photo.urlSmall
+      };
+      photosToOrder.push(photoObj);
+    });
+    console.log(photosToOrder);
+    console.log(this.promoForm.value.promo);
+    console.log(this.initialCost);
     this.isPurchaseSucceed = null;
     this.popupIsShowed = true;
-    this.purchaseSubscription = this.apiCallsService.purchase().subscribe(response => {
-      if (response === 1) {
-
-      }
-      this.isPurchaseSucceed = response;
-    });
+    this.purchaseSubscription = this.apiCallsService.purchase()
+      .pipe(
+        tap(value => {
+          if (value === 0) {
+            this.isPurchaseSucceed = value;
+          }
+        }),
+        filter(value => value === 1),
+        switchMap((value: number, index: number): ObservableInput<any> => {
+          debugger
+          return this.apiCallsService.makeOrder(photosToOrder, this.promoForm.value.promo, this.initialCost);
+        }),
+        tap(() => {
+          this.isPurchaseSucceed = 1;
+        })
+      )
+      .subscribe();
   }
 
   /*если оплата прошла успешно, то при нажатии соответствующей кнопки в модальном окне, вызовется
@@ -129,7 +144,7 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    if (this.purchaseSubscription){
+    if (this.purchaseSubscription) {
       this.purchaseSubscription.unsubscribe();
     }
     if (this.clearOrdersSubscription) {
