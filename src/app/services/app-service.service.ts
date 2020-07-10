@@ -46,7 +46,7 @@ export class AppService {
   page = 1;
   basket: Set<IPhoto> = new Set();
   photos: IPhoto[] = [];
-  getPhotos$: Observable<IPhoto[]>;
+  getPhotos$: Observable<string>;
   activeFilters: BehaviorSubject<IFilters>;
 
   constructor(public apiCallsService: ApiCallsService) {
@@ -73,8 +73,11 @@ export class AppService {
           if (filters[1].orientation) {
             params.orientation = filters[1].orientation;
           }
-          if (filters[0].color !== filters[1].color || filters[0].orientation !== filters[1].orientation ||
-            filters[0].searchTerm !== filters[1].searchTerm || filters[0].price !== filters[1].price) {
+          if ((filters[0].color !== filters[1].color || filters[0].orientation !== filters[1].orientation ||
+            filters[0].searchTerm !== filters[1].searchTerm || filters[0].price !== filters[1].price) || (
+              filters[1].searchTerm === undefined && filters[1].price === undefined
+              && filters[1].orientation === undefined && filters[1].color === undefined && this.page === 1
+          )) {
             this.page = 1;
           } else {
             ++this.page;
@@ -82,25 +85,29 @@ export class AppService {
           params.page = this.page;
           console.log(params);
           console.log(filters);
-          return this.apiCallsService.searchPhotos(params);
-        }),
+          if (!params.term && !params.price && !params.color && !params.orientation) {
+            return this.apiCallsService.fetchWallpapers(this.page);
+          } else {
+            return this.apiCallsService.searchPhotos(params);
+          }
+        })/*,
         tap(response => {
           const photos = JSON.parse(response);
           photos.forEach(photo => {
             photo.isSelected = false;
           });
           this.addLoadedPhotos(photos);
-        })
+        })*/
       );
   }
 
-  addLoadedPhotos(photos: IPhoto[]): void {
+  /*addLoadedPhotos(photos: IPhoto[]): void {
     if (this.page === 1) {
       this.photos = photos;
     } else {
       this.photos = this.photos.concat(photos);
     }
-  }
+  }*/
 
   initializeBasket(): void {
     if (localStorage.getItem('photos to order')) {
@@ -138,9 +145,9 @@ export class AppService {
     this.updateLocalStorage([...this.basket.values()]);
   }
 
-  findById(id: string): IPhoto {
+  /*findById(id: string): IPhoto {
     return this.photos.find(photo => photo.id === id);
-  }
+  }*/
 
   /*filterBasket(orders: IPhoto[]): void {
     this.clearBasket();
@@ -149,9 +156,9 @@ export class AppService {
     });
   }*/
 
-  resetIsSelected(): void {
+  /*resetIsSelected(): void {
     this.photos.forEach(photo => photo.isSelected = false);
-  }
+  }*/
 
   /*filteringPhotos(popularityFilterValue: number, priceFilterValue: number): void {
     this.filteredByParamsPhotos = this.filteredByTitlePhotos.filter(photo => {
@@ -175,5 +182,7 @@ export class AppService {
 
   clearBasket(): void {
     this.basket.clear();
+    localStorage.clear();
+    this.page = 1;
   }
 }

@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import {AppService} from '../services/app-service.service';
 import {NavigationEnd, Router} from '@angular/router';
 import {filter} from 'rxjs/operators';
@@ -35,7 +35,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   /*метод поиска картинок по введеному в инпут значению*/
   searchWallpapersByTitle(): void {
-
+    this.appService.page = 1;
     this.getPhotosSubscription = this.appService.activeFilters.next({ color: undefined, price: undefined, orientation: undefined, searchTerm: this.term });
     /*if (term) {
       this.searchByTitleSubscription = this.apiCallsService.searchByTitle(term)

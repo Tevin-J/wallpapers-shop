@@ -2,7 +2,7 @@
   <h1 class="title">Select your wallpaper</h1>
   <div class="grid-container" infiniteScroll [infiniteScrollDistance]="2"
        [infiniteScrollThrottle]="50" (scrolled)="onScroll()">
-      <div class="wallpaper" *ngFor="let photo of appService.photos">
+      <div class="wallpaper" *ngFor="let photo of photos">
         <img src="{{photo.urlSmall}}" (click)="openPopup(photo.id)">
         <div class="price-container">
           <mat-checkbox class="select-checkbox" (change)="selectPhoto(photo.id)"

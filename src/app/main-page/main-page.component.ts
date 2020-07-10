@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit} from '@angular/core';
+import {Component, OnDestroy, OnInit, AfterViewInit} from '@angular/core';
 import {AppService, IPhoto} from '../services/app-service.service';
 
 interface IColor {
@@ -12,7 +12,9 @@ interface IOrientation {
   templateUrl: './main-page.component.html',
   styleUrls: ['./main-page.component.css']
 })
-export class MainPageComponent implements OnInit, OnDestroy {
+export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
+
+  photos: IPhoto[];
 
   openedPhoto = null as IPhoto;
 
@@ -53,18 +55,36 @@ export class MainPageComponent implements OnInit, OnDestroy {
   applyFiltersSubscription;
 
   constructor(
-    public appService: AppService
-  ) { }
+    private appService: AppService
+  ) {}
 
   ngOnInit(): void {
     this.initializeBasket();
     this.getPhotos();
   }
 
+  public ngAfterViewInit() {
+    this.appService.activeFilters.next({ color: undefined, price: undefined, orientation: undefined, searchTerm: undefined });
+  }
+
   getPhotos(): void {
     this.getPhotosSubscription = this.appService.getPhotos$
       .subscribe(response => {
+        const photos = JSON.parse(response);
+        photos.forEach(photo => {
+          photo.isSelected = false;
+        });
+        this.addLoadedPhotos(photos);
       });
+  }
+
+  addLoadedPhotos(photos: IPhoto[]): void {
+    if (this.appService.page === 1) {
+      this.photos = photos;
+      this.appService.page++;
+    } else {
+      this.photos = this.photos.concat(photos);
+    }
   }
 
   /*initial getting photos to basket from local storage*/
@@ -74,7 +94,7 @@ export class MainPageComponent implements OnInit, OnDestroy {
 
   /*метод открытия модалки для данного фото*/
   openPopup(id: string): void {
-    this.openedPhoto = this.appService.findById(id);
+    this.openedPhoto = this.findById(id);
   }
 
   /*метод закрытия модалки*/
@@ -93,12 +113,16 @@ export class MainPageComponent implements OnInit, OnDestroy {
   selectPhoto(id: string): void {
     const updatedSelected: IPhoto[] = this.selectedPhotos.filter(photo => photo.id !== id);
     if (updatedSelected.length === this.selectedPhotos.length) {
-      this.appService.findById(id).isSelected = true;
-      this.selectedPhotos.push(this.appService.findById(id));
+      this.findById(id).isSelected = true;
+      this.selectedPhotos.push(this.findById(id));
     } else {
-      this.appService.findById(id).isSelected = false;
+      this.findById(id).isSelected = false;
       this.selectedPhotos = updatedSelected;
     }
+  }
+
+  findById(id: string): IPhoto {
+    return this.photos.find(photo => photo.id === id);
   }
 
   /*метод добавления фото в корзину. корзина - Set*/
@@ -107,7 +131,11 @@ export class MainPageComponent implements OnInit, OnDestroy {
       this.appService.addToBasket(photo);
     });
     this.selectedPhotos = [];
-    this.appService.resetIsSelected();
+    this.resetIsSelected();
+  }
+
+  resetIsSelected(): void {
+    this.photos.forEach(photo => photo.isSelected = false);
   }
 
   /*метод открытия-закрытия окна с настройками фильтрации*/

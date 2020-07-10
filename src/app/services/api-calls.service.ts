@@ -32,24 +32,28 @@ export class ApiCallsService {
     }
   }
 
-  addToOrder(orders: IPhoto[]): Observable<string> {
-    return this.http.post<any>('http://localhost:3000/orders', orders);
+  submitPromo(promo: string): Observable<any> {
+    return this.http.post<any>('http://localhost:3000/promo/apply', {promo});
   }
+
+  /*addToOrder(orders: IPhoto[]): Observable<string> {
+    return this.http.post<any>('http://localhost:3000/orders', orders);
+  }*/
 
   makeOrder(items: IItem[], promo: string, cost: number): Observable<any> {
     return this.http.post<any>('http://localhost:3000/orders', {items, promo, cost});
   }
 
-  removeFromOrder(id: string): Observable<string> {
+  /*removeFromOrder(id: string): Observable<string> {
     return this.http.delete<any>(`http://localhost:3000/orders/remove/${id}`);
-  }
+  }*/
 
   /*метод оплаты покупок*/
   purchase(): Observable<number> {
        return this.http.get<any>('http://localhost:3000/purchase');
   }
 
-  clearAllOrders(): Observable<string> {
+  /*clearAllOrders(): Observable<string> {
     return this.http.delete<any>('http://localhost:3000/orders/remove');
-  }
+  }*/
 }
