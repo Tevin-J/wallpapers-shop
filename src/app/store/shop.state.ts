@@ -1,14 +1,25 @@
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext } from '@ngxs/store';
+import { map, mergeMap, tap } from 'rxjs/operators';
 import { Photo } from '../models/photo.model';
 import { AppService, IPhoto } from '../services/app-service.service';
 import {
-  AddLoadedPhotos, AddToBasketFromPopup, ChangeColor, ChangeOrientation,
+  AddLoadedPhotos,
+  ChangeColor,
+  SetFilters,
+  ChangeOrientation,
   ClearSelectedPhotos,
-  FindPhotoById,
-  GetPhotos, ResetIsSelected, SearchPhotosByTitle,
+  GetPhotos,
+  ResetIsSelected,
   SelectPhoto,
-  ShowSettingsPopup, UpdateLocalStorage
+  ShowSettingsPopup,
+  UpdateLocalStorage,
+  SetSearchTerm,
+  ApplyFilters,
+  ClearAllFilters,
+  InitializeBasket,
+  MakePhotoOpen,
+  MakePhotoClose, AddPhotoToBasket
 } from './shop.actions';
 
 export interface ShopStateModel {
@@ -21,9 +32,8 @@ export interface ShopStateModel {
   orientation: string;
   href: string;
   term: string;
-  page: number;
-  basket: Set<Photo>;
-  basketArr: Photo[];
+  // basket: Set<Photo>;
+  basket: Photo[];
   initialCost: number;
   finalCost: number;
   isPromoApplied: boolean;
@@ -38,14 +48,13 @@ export interface ShopStateModel {
     openedPhoto: null,
     selectedPhotos: [],
     filtersIsShowed: false,
-    price: null,
-    color: null,
-    orientation: null,
+    price: undefined,
+    color: undefined,
+    orientation: undefined,
     href: '',
     term: '',
-    page: 1,
-    basket: new Set<Photo>(),
-    basketArr: [],
+    // basket: new Set<Photo>(),
+    basket: [],
     initialCost: 0,
     finalCost: null,
     isPromoApplied: false,
@@ -62,21 +71,134 @@ export class ShopState {
     return state.photos;
   }
 
-  @Action(AddLoadedPhotos)
-  addLoadedPhotos(ctx: StateContext<ShopStateModel>, action: AddLoadedPhotos) {
+  @Selector()
+  static basket(state: ShopStateModel): Photo[] {
+    return state.basket;
+  }
+
+  @Selector()
+  static openedPhoto(state: ShopStateModel): Photo {
+    return state.openedPhoto;
+  }
+
+  @Action(SetFilters)
+  setFilters(ctx: StateContext<ShopStateModel>, action: SetFilters) {
     const state = ctx.getState();
-    const page = state.page;
-    if (page === 1) {
+    const filters = {
+      color: state.color,
+      price: state.price,
+      orientation: state.orientation,
+      searchTerm: state.term
+    };
+    this.appService.activeFilters.next(filters);
+  }
+
+  @Action(GetPhotos)
+  getPhotos(ctx: StateContext<ShopStateModel>, action: GetPhotos) {
+    return this.appService.getPhotos$
+      .pipe(
+        map(response => {
+          const photos = JSON.parse(response);
+          photos.forEach(photo => {
+            photo.isSelected = false;
+          });
+          return photos;
+        })
+      ).subscribe(data => {
+        const state = ctx.getState();
+        const page = this.appService.page;
+        if (page === 1) {
+          ctx.setState({
+            ...state,
+            photos: data
+          });
+        } else {
+          ctx.setState({
+            ...state,
+            photos: [...state.photos, ...data]
+          });
+        }
+        this.appService.page++;
+      });
+  }
+
+  @Action(SetSearchTerm)
+  setSearchTerm(ctx: StateContext<ShopStateModel>, action: SetSearchTerm) {
+    const state = ctx.getState();
+    ctx.setState({
+      ...state,
+      term: action.searchTerm
+    });
+  }
+
+  @Action(ClearAllFilters)
+  clearAllFilters(ctx: StateContext<ShopStateModel>, action: ClearAllFilters) {
+    const state = ctx.getState();
+    ctx.setState({
+      ...state,
+      term: undefined,
+      price: undefined,
+      color: undefined,
+      orientation: undefined
+    });
+  }
+
+  @Action(ApplyFilters)
+  applyFilters(ctx: StateContext<ShopStateModel>, action: ApplyFilters) {
+    const state = ctx.getState();
+    ctx.setState({
+      ...state,
+      color: action.color,
+      price: action.price,
+      orientation: action.orientation
+    });
+  }
+
+  @Action(InitializeBasket)
+  initializeBasket(ctx: StateContext<ShopStateModel>, action: InitializeBasket) {
+    const state = ctx.getState();
+    const basket = [...state.basket];
+    if (localStorage.getItem('photos to order')) {
+      const photosFromLocalStorage = JSON.parse(localStorage.getItem('photos to order'));
+      photosFromLocalStorage.forEach(photo => {
+        basket.push(photo);
+      });
       ctx.setState({
         ...state,
-        photos: action.loadedPhotos,
-        page: state.page++
+        basket: [...state.basket, ...basket]
       });
-    } else {
+    }
+  }
+
+  @Action(MakePhotoOpen)
+  makePhotoOpen(ctx: StateContext<ShopStateModel>, action: MakePhotoOpen) {
+    const state = ctx.getState();
+    const photo = state.photos.find(p => p.id === action.id);
+    ctx.setState({
+      ...state,
+      openedPhoto: photo
+    });
+  }
+
+  @Action(MakePhotoClose)
+  makePhotoClose(ctx: StateContext<ShopStateModel>, action: MakePhotoClose) {
+    const state = ctx.getState();
+    ctx.setState({
+      ...state,
+      openedPhoto: null
+    });
+  }
+
+  @Action(AddPhotoToBasket)
+  addPhotoToBasket(ctx: StateContext<ShopStateModel>, action: AddPhotoToBasket) {
+    const state = ctx.getState();
+    if (state.basket.every(photo => photo.id !== action.photo.id)) {
       ctx.setState({
         ...state,
-        photos: [...state.photos, ...action.loadedPhotos]
+        basket: [...state.basket, action.photo]
       });
+      const newState = ctx.getState();
+      localStorage.setItem('photos to order', JSON.stringify(newState.basket));
     }
   }
 
@@ -93,11 +215,11 @@ export class ShopState {
   //   }
   // }
 
-  @Action(FindPhotoById)
-  findPhotoById(ctx: StateContext<ShopStateModel>, action: FindPhotoById) {
-    const state = ctx.getState();
-    return state.photos.find(photo => photo.id === action.id);
-  }
+  // @Action(FindPhotoById)
+  // findPhotoById(ctx: StateContext<ShopStateModel>, action: FindPhotoById) {
+  //   const state = ctx.getState();
+  //   return state.photos.find(photo => photo.id === action.id);
+  // }
 
   @Action(ClearSelectedPhotos)
   clearSelectedPhotos(ctx: StateContext<ShopStateModel>, action: ClearSelectedPhotos) {
@@ -114,20 +236,6 @@ export class ShopState {
     ctx.setState({
       ...state,
       isPopupShowed: !state.isPopupShowed
-    });
-  }
-
-  @Action(AddToBasketFromPopup)
-  addToBasketFromPopup(ctx: StateContext<ShopStateModel>, action: AddToBasketFromPopup) {
-    const state = ctx.getState();
-    const basket = state.basket;
-    const basketKeys = [...state.basket.keys()];
-    if (basketKeys.every(key => key.id !== action.openedPhoto.id)) {
-      basket.add(action.openedPhoto);
-    }
-    ctx.setState({
-      ...state,
-      basket
     });
   }
 
@@ -154,21 +262,6 @@ export class ShopState {
     });
   }
 
-  @Action(SearchPhotosByTitle)
-  searchPhotosByTitle(ctx: StateContext<ShopStateModel>, action: SearchPhotosByTitle) {
-    const state = ctx.getState();
-    ctx.setState({
-      ...state,
-      page: 1,
-      color: null,
-      price: null,
-      orientation: null
-    });
-    this.appService.activeFilters.next({
-      color: state.color, price: state.price, orientation: state.orientation, searchTerm: state.term
-    });
-  }
-
   @Action(ResetIsSelected)
   resetIsSelected(ctx: StateContext<ShopStateModel>, action: ResetIsSelected) {
     const state = ctx.getState();
@@ -177,7 +270,7 @@ export class ShopState {
       return {
         ...photo,
         isSelected: false
-        };
+      };
     });
     ctx.setState({
       ...state,

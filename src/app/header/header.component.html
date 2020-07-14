@@ -16,12 +16,12 @@
   </div>
 
   <div class="basket">
-    <img *ngIf="!appService.basket.size; else fullBasket"
+    <img *ngIf="!basket.length; else fullBasket"
          src="../../assets/img/basket-black.svg" alt="basket">
     <ng-template #fullBasket>
       <a routerLink="/checkout">
         <img src="../../assets/img/basket-color.svg" alt="basket">
-        <span [matBadge]="appService.basket.size.toString()" matBadgeColor="warn"
+        <span [matBadge]="basket.length.toString()" matBadgeColor="warn"
               matBadgePosition="before"></span>
       </a>
     </ng-template>

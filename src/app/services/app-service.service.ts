@@ -1,4 +1,5 @@
 import {Injectable} from '@angular/core';
+import { Filters } from '../models/filters.model';
 import {ApiCallsService} from './api-calls.service';
 import {pairwise, switchMap, tap} from 'rxjs/operators';
 import {BehaviorSubject, Observable, ObservableInput} from 'rxjs';
@@ -47,7 +48,7 @@ export class AppService {
   basket: Set<IPhoto> = new Set();
   photos: IPhoto[] = [];
   getPhotos$: Observable<string>;
-  activeFilters: BehaviorSubject<IFilters>;
+  activeFilters: BehaviorSubject<Filters>;
 
   constructor(public apiCallsService: ApiCallsService) {
     this.activeFilters = new BehaviorSubject(
@@ -60,9 +61,6 @@ export class AppService {
           const params: IParams = {page: this.page};
           if (filters[1].searchTerm) {
             params.term = filters[1].searchTerm;
-          } else {
-            filters[1].searchTerm = filters[0].searchTerm;
-            params.term = filters[0].searchTerm;
           }
           if (filters[1].price) {
             params.price = filters[1].price;
@@ -79,8 +77,6 @@ export class AppService {
               && filters[1].orientation === undefined && filters[1].color === undefined && this.page === 1
           )) {
             this.page = 1;
-          } else {
-            ++this.page;
           }
           params.page = this.page;
           console.log(params);

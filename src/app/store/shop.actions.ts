@@ -1,17 +1,43 @@
 import { Photo } from '../models/photo.model';
 
+export class SetFilters {
+  static readonly type = '[Filters] Set Filters';
+}
+
 export class GetPhotos {
   static readonly type = '[Photos] Get Photos';
 }
 
 export class AddLoadedPhotos {
-  static readonly type = '[Photos] AddLoaded Photos';
+  static readonly type = '[Photos] Add Loaded Photos';
   constructor(public loadedPhotos: Photo[]) {}
 }
 
-export class FindPhotoById {
-  static readonly type = '[Photos] Find Photo By Id';
+export class SetSearchTerm {
+  static readonly type = '[Filters] Set Search Term';
+  constructor(public searchTerm: string) {}
+}
+
+export class ClearAllFilters {
+  static readonly type = '[Filters] Clear All Filters';
+}
+
+export class ApplyFilters {
+  static readonly type = '[Filters] Apply Filters';
+  constructor(public color: string, public price: number, public orientation: string) {}
+}
+
+export class InitializeBasket {
+  static readonly type = '[Basket] Initialize Basket';
+}
+
+export class MakePhotoOpen {
+  static readonly type = '[Photos] Make Photo Open';
   constructor(public id: string) {}
+}
+
+export class MakePhotoClose {
+  static readonly type = '[Photos] Make Photo Close';
 }
 
 export class SelectPhoto {
@@ -41,13 +67,13 @@ export class ClosePhotoPopup {
   static readonly type = '[Photos] Close Photo Popup';
 }
 
-export class ShowSettingsPopup {
-  static readonly type = '[Filters] Show Settings Popup';
+export class AddPhotoToBasket {
+  static readonly type = '[Basket] Add Photo To Basket';
+  constructor(public photo: Photo) {}
 }
 
-export class AddToBasketFromPopup {
-  static readonly type = '[Photos] Add To Basket From Popup';
-  constructor(public openedPhoto: Photo) {}
+export class ShowSettingsPopup {
+  static readonly type = '[Filters] Show Settings Popup';
 }
 
 export class UpdateLocalStorage {
@@ -66,6 +92,3 @@ export class ChangeOrientation {
   constructor(public orientationValue: any) {}
 }
 
-export class SearchPhotosByTitle {
-  static readonly type = '[Photos] Search Photos By Title';
-}

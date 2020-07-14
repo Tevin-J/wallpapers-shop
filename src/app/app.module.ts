@@ -1,5 +1,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { NgxsModule } from '@ngxs/store';
+import { environment } from '../environments/environment';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -17,6 +19,7 @@ import { CheckoutPageComponent } from './checkout-page/checkout-page.component';
 import {InfiniteScrollModule} from 'ngx-infinite-scroll';
 import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatSelectModule} from '@angular/material/select';
+import { ShopState } from './store/shop.state';
 
 @NgModule({
   declarations: [
@@ -39,7 +42,10 @@ import {MatSelectModule} from '@angular/material/select';
     MatSliderModule,
     InfiniteScrollModule,
     MatProgressSpinnerModule,
-    MatSelectModule
+    MatSelectModule,
+    NgxsModule.forRoot([ShopState], {
+      developmentMode: !environment.production
+    })
   ],
   providers: [],
   bootstrap: [AppComponent]
