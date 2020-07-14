@@ -215,12 +215,6 @@ export class ShopState {
   //   }
   // }
 
-  // @Action(FindPhotoById)
-  // findPhotoById(ctx: StateContext<ShopStateModel>, action: FindPhotoById) {
-  //   const state = ctx.getState();
-  //   return state.photos.find(photo => photo.id === action.id);
-  // }
-
   @Action(ClearSelectedPhotos)
   clearSelectedPhotos(ctx: StateContext<ShopStateModel>, action: ClearSelectedPhotos) {
     const state = ctx.getState();
