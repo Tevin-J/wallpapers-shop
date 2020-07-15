@@ -8,11 +8,6 @@ export class GetPhotos {
   static readonly type = '[Photos] Get Photos';
 }
 
-export class AddLoadedPhotos {
-  static readonly type = '[Photos] Add Loaded Photos';
-  constructor(public loadedPhotos: Photo[]) {}
-}
-
 export class SetSearchTerm {
   static readonly type = '[Filters] Set Search Term';
   constructor(public searchTerm: string) {}
@@ -45,28 +40,6 @@ export class SelectPhoto {
   constructor(public id: string) {}
 }
 
-export class ResetIsSelected {
-  static readonly type = '[Photos] Reset Is Selected';
-}
-
-export class RemoveFromBasket {
-  static readonly type = '[Basket] Remove From Basket';
-  constructor(public photoId: string) {}
-}
-
-export class ClearSelectedPhotos {
-  static readonly type = '[Photos] Clear Selected Photos';
-}
-
-export class OpenPhotoPopup {
-  static readonly type = '[Photos] Open Photo Popup';
-  constructor(public id: string) {}
-}
-
-export class ClosePhotoPopup {
-  static readonly type = '[Photos] Close Photo Popup';
-}
-
 export class AddPhotoToBasket {
   static readonly type = '[Basket] Add Photo To Basket';
   constructor(public photo: Photo) {}
@@ -76,19 +49,11 @@ export class ShowSettingsPopup {
   static readonly type = '[Filters] Show Settings Popup';
 }
 
-export class UpdateLocalStorage {
-  static readonly type = '[Basket] Update Local Storage';
-  constructor(public photosFromBasket: Photo[]) {
-  }
+export class SetInitCost {
+  static readonly type = '[Cost] Set Init Cost';
 }
 
-export class ChangeColor {
-  static readonly type = '[Filters] Change Color';
-  constructor(public colorValue: any) {}
+export class RemovePhotoFromBasket {
+  static readonly type = '[Basket] Remove Photo From Basket';
+  constructor(public id: string) {}
 }
-
-export class ChangeOrientation {
-  static readonly type = '[Filters] Change Orientation';
-  constructor(public orientationValue: any) {}
-}
-

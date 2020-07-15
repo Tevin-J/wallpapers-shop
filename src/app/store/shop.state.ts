@@ -1,25 +1,19 @@
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext } from '@ngxs/store';
-import { map, mergeMap, tap } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { Photo } from '../models/photo.model';
-import { AppService, IPhoto } from '../services/app-service.service';
+import { AppService } from '../services/app-service.service';
 import {
-  AddLoadedPhotos,
-  ChangeColor,
   SetFilters,
-  ChangeOrientation,
-  ClearSelectedPhotos,
   GetPhotos,
-  ResetIsSelected,
   SelectPhoto,
   ShowSettingsPopup,
-  UpdateLocalStorage,
   SetSearchTerm,
   ApplyFilters,
   ClearAllFilters,
   InitializeBasket,
   MakePhotoOpen,
-  MakePhotoClose, AddPhotoToBasket
+  MakePhotoClose, AddPhotoToBasket, SetInitCost, RemovePhotoFromBasket
 } from './shop.actions';
 
 export interface ShopStateModel {
@@ -32,7 +26,6 @@ export interface ShopStateModel {
   orientation: string;
   href: string;
   term: string;
-  // basket: Set<Photo>;
   basket: Photo[];
   initialCost: number;
   finalCost: number;
@@ -53,7 +46,6 @@ export interface ShopStateModel {
     orientation: undefined,
     href: '',
     term: '',
-    // basket: new Set<Photo>(),
     basket: [],
     initialCost: 0,
     finalCost: null,
@@ -79,6 +71,26 @@ export class ShopState {
   @Selector()
   static openedPhoto(state: ShopStateModel): Photo {
     return state.openedPhoto;
+  }
+
+  @Selector()
+  static selectedPhotos(state: ShopStateModel): Photo[] {
+    return state.selectedPhotos;
+  }
+
+  @Selector()
+  static isPopupShowed(state: ShopStateModel): boolean {
+    return state.isPopupShowed;
+  }
+
+  @Selector()
+  static initialCost(state: ShopStateModel): number {
+    return state.initialCost;
+  }
+
+  @Selector()
+  static finalCost(state: ShopStateModel): number {
+    return state.finalCost;
   }
 
   @Action(SetFilters)
@@ -192,36 +204,62 @@ export class ShopState {
   @Action(AddPhotoToBasket)
   addPhotoToBasket(ctx: StateContext<ShopStateModel>, action: AddPhotoToBasket) {
     const state = ctx.getState();
-    if (state.basket.every(photo => photo.id !== action.photo.id)) {
+    if (action.photo.isSelected) {
+      const newSelected = [...state.selectedPhotos].filter(photo => photo.id !== action.photo.id);
+      const newPhotos = [...state.photos];
+      newPhotos.forEach(photo => {
+        if (photo.id === action.photo.id) {
+          photo.isSelected = false;
+        }
+      });
       ctx.setState({
         ...state,
-        basket: [...state.basket, action.photo]
+        photos: newPhotos,
+        selectedPhotos: newSelected
       });
-      const newState = ctx.getState();
-      localStorage.setItem('photos to order', JSON.stringify(newState.basket));
+    }
+    const state2 = ctx.getState();
+    if (state2.basket.every(photo => photo.id !== action.photo.id)) {
+      ctx.setState({
+        ...state2,
+        basket: [...state2.basket, action.photo]
+      });
+      const state3 = ctx.getState();
+      localStorage.setItem('photos to order', JSON.stringify(state3.basket));
     }
   }
 
-  // @Action(SelectPhoto)
-  // selectPhoto(ctx: StateContext<PhotosStateModel>, action: SelectPhoto) {
-  //   const state = ctx.getState();
-  //   const updatedSelected: Photo[] = state.selectedPhotos.filter(photo => photo.id !== action.id);
-  //   if (updatedSelected.length === state.selectedPhotos.length) {
-  //     this.findPhotoById(id).isSelected = true;
-  //     state.selectedPhotos.push(this.findById(id));
-  //   } else {
-  //     this.findById(id).isSelected = false;
-  //     state.selectedPhotos = updatedSelected;
-  //   }
-  // }
-
-  @Action(ClearSelectedPhotos)
-  clearSelectedPhotos(ctx: StateContext<ShopStateModel>, action: ClearSelectedPhotos) {
+  @Action(SelectPhoto)
+  selectPhoto(ctx: StateContext<ShopStateModel>, action: SelectPhoto) {
     const state = ctx.getState();
-    ctx.setState({
-      ...state,
-      selectedPhotos: []
-    });
+    const updatedSelected: Photo[] = state.selectedPhotos.filter(selectedPhoto => selectedPhoto.id !== action.id);
+    if (updatedSelected.length === state.selectedPhotos.length) {
+      const photo = state.photos.find(p => p.id === action.id);
+      const updatedPhotos = [...state.photos];
+      updatedPhotos.forEach(updatedPhoto => {
+        if (updatedPhoto.id === action.id) {
+          debugger
+          updatedPhoto.isSelected = true;
+        }
+      });
+      ctx.setState({
+        ...state,
+        selectedPhotos: [...state.selectedPhotos, photo],
+        photos: updatedPhotos
+      });
+    } else {
+      const updatedPhotos = [...state.photos];
+      updatedPhotos.forEach(photo => {
+        if (photo.id === action.id) {
+          photo.isSelected = false;
+        }
+      });
+      ctx.setState({
+        ...state,
+        selectedPhotos: updatedSelected,
+        photos: updatedPhotos
+      });
+    }
   }
 
   @Action(ShowSettingsPopup)
@@ -233,43 +271,33 @@ export class ShopState {
     });
   }
 
-  @Action(UpdateLocalStorage)
-  updateLocalStorage(ctx: StateContext<ShopStateModel>, action: UpdateLocalStorage) {
-    localStorage.setItem('photos to order', JSON.stringify(action.photosFromBasket));
-  }
-
-  @Action(ChangeColor)
-  changeColor(ctx: StateContext<ShopStateModel>, action: ChangeColor) {
+  @Action(SetInitCost)
+  setInitCost(ctx: StateContext<ShopStateModel>, action: SetInitCost) {
     const state = ctx.getState();
+    const cost = state.basket.reduce((acc: number, photo: Photo) => {
+      return acc + photo.price;
+    }, 0);
     ctx.setState({
       ...state,
-      color: action.colorValue
-    });
-  }
-
-  @Action(ChangeOrientation)
-  changeOrientation(ctx: StateContext<ShopStateModel>, action: ChangeOrientation) {
-    const state = ctx.getState();
-    ctx.setState({
-      ...state,
-      orientation: action.orientationValue
+      initialCost: cost
     });
   }
 
-  @Action(ResetIsSelected)
-  resetIsSelected(ctx: StateContext<ShopStateModel>, action: ResetIsSelected) {
+  @Action(RemovePhotoFromBasket)
+  removePhotoFromBasket(ctx: StateContext<ShopStateModel>, action: RemovePhotoFromBasket) {
     const state = ctx.getState();
-    const photos = state.photos;
-    const updatedPhotos = photos.map(photo => {
-      return {
-        ...photo,
-        isSelected: false
-      };
-    });
+    const newBasket = [...state.basket].filter(photo => photo.id !== action.id);
+    const cost = newBasket.reduce((acc: number, photo: Photo) => {
+      return acc + photo.price;
+    }, 0);
     ctx.setState({
       ...state,
-      photos: updatedPhotos
+      basket: newBasket,
+      initialCost: cost,
+      finalCost: null
     });
+    localStorage.clear();
+    localStorage.setItem('photos to order', JSON.stringify(newBasket));
   }
 }
 

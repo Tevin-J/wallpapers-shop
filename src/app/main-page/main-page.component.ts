@@ -1,23 +1,21 @@
-import {Component, OnDestroy, OnInit, AfterViewInit} from '@angular/core';
+import {Component, OnInit, AfterViewInit} from '@angular/core';
 import { Select, Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
-import { mergeMap, tap } from 'rxjs/operators';
 import { Photo } from '../models/photo.model';
-import {AppService, IPhoto} from '../services/app-service.service';
 import {
-  AddLoadedPhotos, AddPhotoToBasket,
+  AddPhotoToBasket,
   ApplyFilters,
   GetPhotos,
   InitializeBasket, MakePhotoClose,
-  MakePhotoOpen,
-  SetFilters
+  MakePhotoOpen, SelectPhoto,
+  SetFilters, ShowSettingsPopup
 } from '../store/shop.actions';
 import { ShopState } from '../store/shop.state';
 
-interface IColor {
+interface Color {
   value: string;
 }
-interface IOrientation {
+interface Orientation {
   value: string;
 }
 @Component({
@@ -25,7 +23,7 @@ interface IOrientation {
   templateUrl: './main-page.component.html',
   styleUrls: ['./main-page.component.css']
 })
-export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
+export class MainPageComponent implements OnInit, AfterViewInit {
 
   @Select(ShopState.photos)
   public photos$: Observable<Photo[]>;
@@ -33,15 +31,19 @@ export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
   @Select(ShopState.openedPhoto)
   public openedPhoto$: Observable<Photo>;
 
+  @Select(ShopState.selectedPhotos)
+  public selectedPhotos$: Observable<Photo[]>;
 
+  @Select(ShopState.isPopupShowed)
+  public isPopupShowed$: Observable<boolean>;
 
-  photos: IPhoto[];
+  photos: Photo[];
 
-  openedPhoto = null as IPhoto;
+  openedPhoto: Photo;
 
-  selectedPhotos = [] as IPhoto[];
+  selectedPhotos: Photo[];
 
-  popupIsShowed = false;
+  isPopupShowed: boolean;
 
   price: number | null;
 
@@ -49,45 +51,45 @@ export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
 
   orientation: string | null;
 
-  colors: IColor[] = [
-    {value: 'black_and_white'},
-    {value: 'black'},
-    {value: 'white'},
-    {value: 'yellow'},
-    {value: 'orange'},
-    {value: 'red'},
-    {value: 'purple'},
-    {value: 'magenta'},
-    {value: 'green'},
-    {value: 'teal'},
-    {value: 'blue'}
+  colors: Color[] = [
+    { value: 'black_and_white' },
+    { value: 'black' },
+    { value: 'white' },
+    { value: 'yellow' },
+    { value: 'orange' },
+    { value: 'red' },
+    { value: 'purple' },
+    { value: 'magenta' },
+    { value: 'green' },
+    { value: 'teal' },
+    { value: 'blue' }
   ];
 
-  orientations: IOrientation[] = [
-    {value: 'landscape'},
-    {value: 'portrait'},
-    {value: 'squarish'}
+  orientations: Orientation[] = [
+    { value: 'landscape' },
+    { value: 'portrait' },
+    { value: 'squarish' }
   ];
-
-  getPhotosSubscription;
-
-  getScrolledPhotosSubscription;
-
-  applyFiltersSubscription;
 
   constructor(
-    private appService: AppService,
     private store: Store
   ) {}
 
   ngOnInit(): void {
     this.initializeBasket();
     this.getPhotos();
+    this.selectedPhotos$
+      .subscribe(data => {
+        this.selectedPhotos = data;
+      });
+    this.isPopupShowed$
+      .subscribe(data => {
+        this.isPopupShowed = data;
+      });
   }
 
   public ngAfterViewInit() {
     this.store.dispatch(new SetFilters());
-    // this.appService.activeFilters.next({ color: undefined, price: undefined, orientation: undefined, searchTerm: undefined });
   }
 
   getPhotos(): void {
@@ -96,30 +98,11 @@ export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
         this.photos = data;
       });
     this.store.dispatch(new GetPhotos());
-
-    // this.getPhotosSubscription = this.appService.getPhotos$
-    //   .subscribe(response => {
-    //     const photos = JSON.parse(response);
-    //     photos.forEach(photo => {
-    //       photo.isSelected = false;
-    //     });
-    //     this.addLoadedPhotos(photos);
-    //   });
   }
-
-  // addLoadedPhotos(photos: IPhoto[]): void {
-  //   if (this.appService.page === 1) {
-  //     this.photos = photos;
-  //     this.appService.page++;
-  //   } else {
-  //     this.photos = this.photos.concat(photos);
-  //   }
-  // }
 
   /*initial getting photos to basket from local storage*/
   initializeBasket(): void {
     this.store.dispatch(new InitializeBasket());
-    // this.appService.initializeBasket();
   }
 
   /*метод открытия модалки для данного фото*/
@@ -129,54 +112,34 @@ export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
         this.openedPhoto = data;
       });
     this.store.dispatch(new MakePhotoOpen(id));
-    // this.openedPhoto = this.findById(id);
   }
 
-  /*метод закрытия модалки*/
   closePopup(): void {
     this.store.dispatch(new MakePhotoClose());
   }
 
   /*метод добавления {} фотографии в корзину для дальнейшей ее покупки*/
-   addToBasketFromPopup(): void {
-     this.store.dispatch(new AddPhotoToBasket(this.openedPhoto));
-     // this.appService.addToBasket(this.openedPhoto);
-     this.closePopup();
+  addToBasketFromPopup(): void {
+    this.store.dispatch(new AddPhotoToBasket(this.openedPhoto));
+    this.store.dispatch(new MakePhotoClose());
   }
 
   /*метод нажатия на чекбокс у фото - помещение в массив отмеченных товаров для дальнейшего
   их помещения в корзину*/
   selectPhoto(id: string): void {
-    const updatedSelected: IPhoto[] = this.selectedPhotos.filter(photo => photo.id !== id);
-    if (updatedSelected.length === this.selectedPhotos.length) {
-      this.findById(id).isSelected = true;
-      this.selectedPhotos.push(this.findById(id));
-    } else {
-      this.findById(id).isSelected = false;
-      this.selectedPhotos = updatedSelected;
-    }
+    this.store.dispatch(new SelectPhoto(id));
   }
 
-  findById(id: string): IPhoto {
-    return this.photos.find(photo => photo.id === id);
-  }
-
-  /*метод добавления фото в корзину. корзина - Set*/
+  /*метод добавления фото в корзину.*/
   addToBasket(): void {
     this.selectedPhotos.forEach(photo => {
-      this.appService.addToBasket(photo);
+      this.store.dispatch(new AddPhotoToBasket(photo));
     });
-    this.selectedPhotos = [];
-    this.resetIsSelected();
-  }
-
-  resetIsSelected(): void {
-    this.photos.forEach(photo => photo.isSelected = false);
   }
 
   /*метод открытия-закрытия окна с настройками фильтрации*/
   showSettingsPopup(): void {
-    this.popupIsShowed = !this.popupIsShowed;
+    this.store.dispatch(new ShowSettingsPopup());
   }
 
   /*метод фильтрации фото по параметрам*/
@@ -184,16 +147,11 @@ export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
     this.showSettingsPopup();
     this.store.dispatch(new ApplyFilters(this.color, this.price, this.orientation));
     this.store.dispatch(new SetFilters());
-    // this.applyFiltersSubscription = this.appService.activeFilters.next({ color: this.color, price: this.price, orientation: this.orientation });
-    /*this.price = undefined;
-    this.color = undefined;
-    this.orientation = undefined;*/
   }
 
   /*метод, загружающий новые фото при скролле до конца страницы*/
   onScroll(): void {
     this.store.dispatch(new SetFilters());
-    // this.getScrolledPhotosSubscription = this.appService.activeFilters.next({ color: this.color, price: this.price, orientation: this.orientation });
   }
 
   onColorFilterValueChanged(event): void {
@@ -203,17 +161,4 @@ export class MainPageComponent implements OnInit, OnDestroy, AfterViewInit {
   onOrientationFilterValueChanged(event): void {
     this.orientation = event.source.value;
   }
-
-  ngOnDestroy(): void {
-    if (this.getPhotosSubscription) {
-      this.getPhotosSubscription.unsubscribe();
-    }
-    if (this.getScrolledPhotosSubscription) {
-      this.getScrolledPhotosSubscription.unsubscribe();
-    }
-    if (this.applyFiltersSubscription) {
-      this.applyFiltersSubscription.unsubscribe();
-    }
-  }
-
 }

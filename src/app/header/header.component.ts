@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Select, Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { Photo } from '../models/photo.model';
@@ -24,10 +24,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   href: string;
   term: string;
   routerChangingSubscription;
-
-  getPhotosSubscription;
-
-  searchByTitleSubscription;
 
   constructor(public appService: AppService, public apiCallsService: ApiCallsService, private router: Router,
               private store: Store) {
@@ -57,38 +53,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.store.dispatch(new SetSearchTerm(this.term));
     }
     this.store.dispatch(new SetFilters());
-    // this.getPhotosSubscription = this.appService.activeFilters.next({ color: undefined, price: undefined, orientation: undefined, searchTerm: this.term });
-    /*if (term) {
-      this.searchByTitleSubscription = this.apiCallsService.searchByTitle(term)
-        .subscribe(response => {
-          this.appService.photos = JSON.parse(response);
-        });
-    } else {
-      this.searchByTitleSubscription = this.apiCallsService.fetchWallpapers()
-        .subscribe(response => {
-          this.appService.photos = JSON.parse(response);
-        });
-    }*/
-
-    /*this.appService.filteredByTitlePhotos = this.appService.photos.filter(p => {
-      if (p.description) {
-        return p.description.toLowerCase().includes(term.toLowerCase());
-      } else {
-        return p;
-      }
-    });
-    this.appService.filteredPhotos = this.appService.filteredByTitlePhotos;*/
   }
 
   ngOnDestroy(): void {
     if (this.routerChangingSubscription) {
       this.routerChangingSubscription.unsubscribe();
     }
-    if (this.getPhotosSubscription) {
-      this.getPhotosSubscription.unsubscribe();
-    }
-    /*if (this.searchByTitleSubscription) {
-      this.searchByTitleSubscription.unsubscribe();
-    }*/
   }
 }
