@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Photo } from '../models/photo.model';
 import {
   AddPhotoToBasket,
-  ApplyFilters,
+  ApplyFilters, ChangeColorFilter, ChangeOrientationFilter,
   GetPhotos,
   InitializeBasket, MakePhotoClose,
   MakePhotoOpen, SelectPhoto,
@@ -34,21 +34,24 @@ export class MainPageComponent implements OnInit, AfterViewInit {
   @Select(ShopState.selectedPhotos)
   public selectedPhotos$: Observable<Photo[]>;
 
-  @Select(ShopState.isPopupShowed)
-  public isPopupShowed$: Observable<boolean>;
+  @Select(ShopState.isFiltersPopupShowed)
+  public isFiltersPopupShowed$: Observable<boolean>;
 
-  photos: Photo[];
+  @Select(ShopState.color)
+  public color$: Observable<string>;
 
+  @Select(ShopState.orientation)
+  public orientation$: Observable<string>;
+
+  @Select(ShopState.price)
+  public price$: Observable<number>;
+
+  public photos: Photo[];
   openedPhoto: Photo;
-
   selectedPhotos: Photo[];
-
-  isPopupShowed: boolean;
-
+  isFiltersPopupShowed: boolean;
   price: number | null;
-
   color: string | null;
-
   orientation: string | null;
 
   colors: Color[] = [
@@ -82,9 +85,21 @@ export class MainPageComponent implements OnInit, AfterViewInit {
       .subscribe(data => {
         this.selectedPhotos = data;
       });
-    this.isPopupShowed$
+    this.isFiltersPopupShowed$
       .subscribe(data => {
-        this.isPopupShowed = data;
+        this.isFiltersPopupShowed = data;
+      });
+    this.price$
+      .subscribe(data => {
+        this.price = data;
+      });
+    this.color$
+      .subscribe(data => {
+        this.color = data;
+      });
+    this.orientation$
+      .subscribe(data => {
+        this.orientation = data;
       });
   }
 
@@ -155,10 +170,10 @@ export class MainPageComponent implements OnInit, AfterViewInit {
   }
 
   onColorFilterValueChanged(event): void {
-    this.color = event.source.value;
+    this.store.dispatch(new ChangeColorFilter(event.source.value));
   }
 
   onOrientationFilterValueChanged(event): void {
-    this.orientation = event.source.value;
+    this.store.dispatch(new ChangeOrientationFilter(event.source.value));
   }
 }

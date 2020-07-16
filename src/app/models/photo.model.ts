@@ -6,3 +6,8 @@ export interface Photo {
   price: number;
   isSelected: boolean;
 }
+
+export interface Item {
+  id: string;
+  url: string;
+}

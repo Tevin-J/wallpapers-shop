@@ -3,9 +3,15 @@ import { Select, Store } from '@ngxs/store';
 import { Photo } from '../models/photo.model';
 import {AppService} from '../services/app-service.service';
 import {FormControl, FormGroup, Validators} from '@angular/forms';
-import { delay, filter, switchMap, tap } from 'rxjs/operators';
-import { Observable, ObservableInput } from 'rxjs';
-import { RemovePhotoFromBasket, SetInitCost } from '../store/shop.actions';
+import { Observable } from 'rxjs';
+import {
+  FinishPurchasing,
+  GetPurchaseStatus,
+  InitializePurchasingState, MakeOrder,
+  RemovePhotoFromBasket,
+  SetInitCost,
+  SubmitPromo
+} from '../store/shop.actions';
 import { ShopState } from '../store/shop.state';
 
 @Component({
@@ -24,6 +30,15 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   @Select(ShopState.finalCost)
   public finalCost$: Observable<number>;
 
+  @Select(ShopState.isPromoApplied)
+  public isPromoApplied$: Observable<boolean>;
+
+  @Select(ShopState.isPurchasePopupShowed)
+  public isPurchasePopupShowed$: Observable<boolean>;
+
+  @Select(ShopState.isPurchaseSucceed)
+  public isPurchaseSucceed$: Observable<number>;
+
   basket: Photo[];
 
   promoForm: FormGroup;
@@ -32,9 +47,9 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
 
   finalCost: number;
 
-  isPromoApplied = false;
+  isPromoApplied: boolean;
 
-  popupIsShowed = false;
+  isPurchasePopupShowed: boolean;
 
   isPurchaseSucceed: number;
 
@@ -60,6 +75,21 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
         this.finalCost = data;
       });
 
+    this.isPromoApplied$
+      .subscribe(data => {
+        this.isPromoApplied = data;
+      });
+
+    this.isPurchasePopupShowed$
+      .subscribe(data => {
+        this.isPurchasePopupShowed = data;
+      });
+
+    this.isPurchaseSucceed$
+      .subscribe(data => {
+        this.isPurchaseSucceed = data;
+      });
+
     this.store.dispatch(new SetInitCost());
 
     /*инициализируем форму по вводу промокода*/
@@ -74,51 +104,31 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
   }
 
   /*метод сабмита формы*/
-  // submitPromo(): void {
-  //   const formData = {...this.promoForm.value};
-  //   this.apiCallsService.submitPromo(formData.promo)
-  //     .subscribe(discount => {
-  //       if (discount !== 1) {
-  //         this.finalCost = this.initialCost * discount;
-  //         this.isPromoApplied = true;
-  //       }
-  //     });
-  // }
+  submitPromo(): void {
+    const formData = {...this.promoForm.value};
+    this.store.dispatch(new SubmitPromo(formData.promo));
+  }
 
   /*method to purchase order. if success - calling makeOrder method*/
-  // purchase(): void {
-  //   const cost = this.finalCost ? this.finalCost : this.initialCost;
-  //   const photosToOrder = [];
-  //   this.basket.forEach(photo => {
-  //     const photoObj = {
-  //       id: photo.id,
-  //       url: photo.urlSmall
-  //     };
-  //     photosToOrder.push(photoObj);
-  //   });
-  //   this.isPurchaseSucceed = null;
-  //   this.popupIsShowed = true;
-  //   this.purchaseSubscription = this.apiCallsService.purchase()
-  //     .pipe(
-  //       delay(2000),
-  //       tap(value => {
-  //         if (value === 0) {
-  //           this.isPurchaseSucceed = value;
-  //         }
-  //       }),
-  //       filter(value => value === 1),
-  //       switchMap((value: number, index: number): ObservableInput<any> => {
-  //         return this.apiCallsService.makeOrder(photosToOrder, this.promoForm.value.promo, cost);
-  //       })
-  //     )
-  //     .subscribe(items => {
-  //       this.clearAll();
-  //       this.isPurchaseSucceed = 1;
-  //     });
-  // }
+  purchase(): void {
+    const cost = this.finalCost ? this.finalCost : this.initialCost;
+    const photosToOrder = [];
+    this.basket.forEach(photo => {
+      const photoObj = {
+        id: photo.id,
+        url: photo.urlSmall
+      };
+      photosToOrder.push(photoObj);
+    });
+    this.store.dispatch(new InitializePurchasingState());
+    this.store.dispatch(new GetPurchaseStatus())
+      .subscribe(value => {
+        this.store.dispatch(new MakeOrder(photosToOrder, this.promoForm.value.promo, cost));
+      });
+  }
 
   clearAll(): void {
-    this.appService.clearBasket();
+    this.store.dispatch(new FinishPurchasing());
   }
 
   ngOnDestroy(): void {

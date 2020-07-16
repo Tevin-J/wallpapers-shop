@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Action, Selector, State, StateContext } from '@ngxs/store';
-import { map } from 'rxjs/operators';
+import { delay, filter, map, tap } from 'rxjs/operators';
 import { Photo } from '../models/photo.model';
+import { ApiCallsService } from '../services/api-calls.service';
 import { AppService } from '../services/app-service.service';
 import {
   SetFilters,
@@ -13,14 +14,20 @@ import {
   ClearAllFilters,
   InitializeBasket,
   MakePhotoOpen,
-  MakePhotoClose, AddPhotoToBasket, SetInitCost, RemovePhotoFromBasket
+  MakePhotoClose,
+  AddPhotoToBasket,
+  SetInitCost,
+  RemovePhotoFromBasket,
+  SubmitPromo,
+  InitializePurchasingState,
+  GetPurchaseStatus, MakeOrder, FinishPurchasing, ChangeColorFilter, ChangeOrientationFilter
 } from './shop.actions';
 
 export interface ShopStateModel {
   photos: Photo[];
   openedPhoto: Photo;
   selectedPhotos: Photo[];
-  filtersIsShowed: boolean;
+  isFiltersPopupShowed: boolean;
   price: number;
   color: string;
   orientation: string;
@@ -30,7 +37,7 @@ export interface ShopStateModel {
   initialCost: number;
   finalCost: number;
   isPromoApplied: boolean;
-  isPopupShowed: boolean;
+  isPurchasePopupShowed: boolean;
   isPurchaseSucceed: number;
 }
 
@@ -40,7 +47,7 @@ export interface ShopStateModel {
     photos: [],
     openedPhoto: null,
     selectedPhotos: [],
-    filtersIsShowed: false,
+    isFiltersPopupShowed: false,
     price: undefined,
     color: undefined,
     orientation: undefined,
@@ -50,13 +57,13 @@ export interface ShopStateModel {
     initialCost: 0,
     finalCost: null,
     isPromoApplied: false,
-    isPopupShowed: false,
+    isPurchasePopupShowed: false,
     isPurchaseSucceed: 0
   }
 })
 @Injectable()
 export class ShopState {
-  constructor(private appService: AppService) {}
+  constructor(private appService: AppService, private apiCallsService: ApiCallsService) {}
 
   @Selector()
   static photos(state: ShopStateModel): Photo[] {
@@ -79,8 +86,23 @@ export class ShopState {
   }
 
   @Selector()
-  static isPopupShowed(state: ShopStateModel): boolean {
-    return state.isPopupShowed;
+  static isFiltersPopupShowed(state: ShopStateModel): boolean {
+    return state.isFiltersPopupShowed;
+  }
+
+  @Selector()
+  static price(state: ShopStateModel): number {
+    return state.price;
+  }
+
+  @Selector()
+  static color(state: ShopStateModel): string {
+    return state.color;
+  }
+
+  @Selector()
+  static orientation(state: ShopStateModel): string {
+    return state.orientation;
   }
 
   @Selector()
@@ -91,6 +113,21 @@ export class ShopState {
   @Selector()
   static finalCost(state: ShopStateModel): number {
     return state.finalCost;
+  }
+
+  @Selector()
+  static isPromoApplied(state: ShopStateModel): boolean {
+    return state.isPromoApplied;
+  }
+
+  @Selector()
+  static isPurchasePopupShowed(state: ShopStateModel): boolean {
+    return state.isPurchasePopupShowed;
+  }
+
+  @Selector()
+  static isPurchaseSucceed(state: ShopStateModel): number {
+    return state.isPurchaseSucceed;
   }
 
   @Action(SetFilters)
@@ -140,6 +177,24 @@ export class ShopState {
     ctx.setState({
       ...state,
       term: action.searchTerm
+    });
+  }
+
+  @Action(ChangeColorFilter)
+  changeColorFilter(ctx: StateContext<ShopStateModel>, action: ChangeColorFilter) {
+    const state = ctx.getState();
+    ctx.setState({
+      ...state,
+      color: action.color
+    });
+  }
+
+  @Action(ChangeOrientationFilter)
+  changeOrientationFilter(ctx: StateContext<ShopStateModel>, action: ChangeOrientationFilter) {
+    const state = ctx.getState();
+    ctx.setState({
+      ...state,
+      orientation: action.orientation
     });
   }
 
@@ -232,34 +287,44 @@ export class ShopState {
   @Action(SelectPhoto)
   selectPhoto(ctx: StateContext<ShopStateModel>, action: SelectPhoto) {
     const state = ctx.getState();
-    const updatedSelected: Photo[] = state.selectedPhotos.filter(selectedPhoto => selectedPhoto.id !== action.id);
-    if (updatedSelected.length === state.selectedPhotos.length) {
-      const photo = state.photos.find(p => p.id === action.id);
-      const updatedPhotos = [...state.photos];
-      updatedPhotos.forEach(updatedPhoto => {
-        if (updatedPhoto.id === action.id) {
-          debugger
-          updatedPhoto.isSelected = true;
-        }
-      });
-      ctx.setState({
-        ...state,
-        selectedPhotos: [...state.selectedPhotos, photo],
-        photos: updatedPhotos
-      });
-    } else {
-      const updatedPhotos = [...state.photos];
-      updatedPhotos.forEach(photo => {
-        if (photo.id === action.id) {
-          photo.isSelected = false;
-        }
-      });
-      ctx.setState({
-        ...state,
-        selectedPhotos: updatedSelected,
-        photos: updatedPhotos
-      });
-    }
+    const updatedPhotos = [...state.photos];
+    updatedPhotos.forEach(photo => {
+      if (photo.id === action.id) {
+        photo.isSelected = !photo.isSelected;
+      }
+    });
+    ctx.setState({
+      ...state,
+      photos: updatedPhotos
+    });
+    // const updatedSelected: Photo[] = state.selectedPhotos.filter(selectedPhoto => selectedPhoto.id !== action.id);
+    // if (updatedSelected.length === state.selectedPhotos.length) {
+    //   const photo = state.photos.find(p => p.id === action.id);
+    //   const updatedPhotos = [...state.photos];
+    //   updatedPhotos.forEach(updatedPhoto => {
+    //     if (updatedPhoto.id === action.id) {
+    //       debugger;
+    //       updatedPhoto.isSelected = true;
+    //     }
+    //   });
+    //   ctx.setState({
+    //     ...state,
+    //     selectedPhotos: [...state.selectedPhotos, photo],
+    //     photos: updatedPhotos
+    //   });
+    // } else {
+    //   const updatedPhotos = [...state.photos];
+    //   updatedPhotos.forEach(photo => {
+    //     if (photo.id === action.id) {
+    //       photo.isSelected = false;
+    //     }
+    //   });
+    //   ctx.setState({
+    //     ...state,
+    //     selectedPhotos: updatedSelected,
+    //     photos: updatedPhotos
+    //   });
+    // }
   }
 
   @Action(ShowSettingsPopup)
@@ -267,7 +332,7 @@ export class ShopState {
     const state = ctx.getState();
     ctx.setState({
       ...state,
-      isPopupShowed: !state.isPopupShowed
+      isFiltersPopupShowed: !state.isFiltersPopupShowed
     });
   }
 
@@ -294,10 +359,77 @@ export class ShopState {
       ...state,
       basket: newBasket,
       initialCost: cost,
-      finalCost: null
+      finalCost: null,
+      isPromoApplied: false
     });
     localStorage.clear();
     localStorage.setItem('photos to order', JSON.stringify(newBasket));
   }
-}
 
+  @Action(SubmitPromo)
+  submitPromo(ctx: StateContext<ShopStateModel>, action: SubmitPromo) {
+    this.apiCallsService.submitPromo(action.promo)
+      .subscribe(discount => {
+        const state = ctx.getState();
+        if (discount !== 1) {
+          ctx.setState({
+            ...state,
+            finalCost: state.initialCost * discount,
+            isPromoApplied: true
+          });
+        }
+      });
+  }
+
+  @Action(InitializePurchasingState)
+  initializePurchasingState(ctx: StateContext<ShopStateModel>, action: InitializePurchasingState) {
+    const state = ctx.getState();
+    ctx.setState({
+      ...state,
+      isPurchaseSucceed: null,
+      isPurchasePopupShowed: true
+    });
+  }
+
+  @Action(GetPurchaseStatus)
+  getPurchaseStatus(ctx: StateContext<ShopStateModel>, action: GetPurchaseStatus) {
+    return this.apiCallsService.purchase()
+      .pipe(
+        delay(2000),
+        tap(value => {
+          const state = ctx.getState();
+          if (!value) {
+            ctx.setState({
+              ...state,
+              isPurchaseSucceed: value
+            });
+          }
+        }),
+        filter(value => value === 1)
+      );
+  }
+
+  @Action(MakeOrder)
+  makeOrder(ctx: StateContext<ShopStateModel>, action: MakeOrder) {
+    this.apiCallsService.makeOrder(action.items, action.promo, action.cost)
+      .subscribe(response => {
+        const state = ctx.getState();
+        ctx.setState({
+          ...state,
+          isPurchaseSucceed: 1
+        });
+      });
+  }
+
+  @Action(FinishPurchasing)
+  finishPurchasing(ctx: StateContext<ShopStateModel>, action: FinishPurchasing) {
+    const state = ctx.getState();
+    ctx.setState({
+      ...state,
+      isPurchasePopupShowed: false,
+      basket: []
+    });
+    localStorage.clear();
+    this.appService.page = 1;
+  }
+}

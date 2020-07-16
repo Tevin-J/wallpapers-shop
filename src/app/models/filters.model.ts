@@ -4,3 +4,11 @@ export interface Filters {
   color?: string;
   orientation?: string;
 }
+
+export interface Params {
+  term?: string;
+  price?: number;
+  color?: string;
+  orientation?: string;
+  page: number;
+}

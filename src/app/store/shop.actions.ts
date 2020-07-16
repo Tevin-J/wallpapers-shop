@@ -1,4 +1,4 @@
-import { Photo } from '../models/photo.model';
+import { Item, Photo } from '../models/photo.model';
 
 export class SetFilters {
   static readonly type = '[Filters] Set Filters';
@@ -49,6 +49,16 @@ export class ShowSettingsPopup {
   static readonly type = '[Filters] Show Settings Popup';
 }
 
+export class ChangeColorFilter {
+  static readonly type = '[Filters] Change Color Filter';
+  constructor(public color: string) {}
+}
+
+export class ChangeOrientationFilter {
+  static readonly type = '[Filters] Change Orientation Filter';
+  constructor(public orientation: string) {}
+}
+
 export class SetInitCost {
   static readonly type = '[Cost] Set Init Cost';
 }
@@ -56,4 +66,26 @@ export class SetInitCost {
 export class RemovePhotoFromBasket {
   static readonly type = '[Basket] Remove Photo From Basket';
   constructor(public id: string) {}
+}
+
+export class SubmitPromo {
+  static readonly type = '[Promo] Submit Promo';
+  constructor(public promo: string) {}
+}
+
+export class InitializePurchasingState {
+  static readonly type = '[Purchase] Initialize Purchasing State';
+}
+
+export class GetPurchaseStatus {
+  static readonly type = '[Purchase] Get Purchase Status';
+}
+
+export class MakeOrder {
+  static readonly type = '[Order] Make Order';
+  constructor(public items: Item[], public promo: string, public cost: number) {}
+}
+
+export class FinishPurchasing {
+  static readonly type = '[Purchase] Finish Purchasing';
 }

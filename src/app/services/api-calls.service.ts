@@ -1,7 +1,8 @@
 import {Injectable} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {Observable, Subject} from 'rxjs';
-import {IItem, IParams, IPhoto} from './app-service.service';
+import {Observable} from 'rxjs';
+import { Params } from '../models/filters.model';
+import { Item } from '../models/photo.model';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,7 @@ export class ApiCallsService {
     return this.http.get<any>(`http://localhost:3000/photos?clientId=${clientId}&page=${page}`);
   }
 
-  searchPhotos(params: IParams): Observable<any> {
+  searchPhotos(params: Params): Observable<any> {
     const {term, color, orientation, price, page} = params;
     const clientId = 'Z2U-DGy55aYJGgH-2m8y7mNMlwXSEXw0tWsxs4k-snM';
     if (term && !color && !orientation && !price) {
@@ -36,24 +37,12 @@ export class ApiCallsService {
     return this.http.post<any>('http://localhost:3000/promo/apply', {promo});
   }
 
-  /*addToOrder(orders: IPhoto[]): Observable<string> {
-    return this.http.post<any>('http://localhost:3000/orders', orders);
-  }*/
-
-  makeOrder(items: IItem[], promo: string, cost: number): Observable<any> {
+  makeOrder(items: Item[], promo: string, cost: number): Observable<any> {
     return this.http.post<any>('http://localhost:3000/orders', {items, promo, cost});
   }
-
-  /*removeFromOrder(id: string): Observable<string> {
-    return this.http.delete<any>(`http://localhost:3000/orders/remove/${id}`);
-  }*/
 
   /*метод оплаты покупок*/
   purchase(): Observable<number> {
        return this.http.get<any>('http://localhost:3000/purchase');
   }
-
-  /*clearAllOrders(): Observable<string> {
-    return this.http.delete<any>('http://localhost:3000/orders/remove');
-  }*/
 }

@@ -46,7 +46,7 @@
   </div>
 </div>
 
-<div class="popup" *ngIf="popupIsShowed">
+<div class="popup" *ngIf="isPurchasePopupShowed">
   <div class="popup-background"></div>
   <div [ngSwitch]="isPurchaseSucceed" class="popup-content">
     <ng-template ngSwitchCase="0">
