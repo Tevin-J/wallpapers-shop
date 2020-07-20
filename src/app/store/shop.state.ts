@@ -63,7 +63,8 @@ export interface ShopStateModel {
 })
 @Injectable()
 export class ShopState {
-  constructor(private appService: AppService, private apiCallsService: ApiCallsService) {}
+  constructor(private appService: AppService, private apiCallsService: ApiCallsService) {
+  }
 
   @Selector()
   static photos(state: ShopStateModel): Photo[] {
@@ -258,13 +259,18 @@ export class ShopState {
 
   @Action(AddPhotoToBasket)
   addPhotoToBasket(ctx: StateContext<ShopStateModel>, action: AddPhotoToBasket) {
+    console.log(action.photo);
     const state = ctx.getState();
     if (action.photo.isSelected) {
       const newSelected = [...state.selectedPhotos].filter(photo => photo.id !== action.photo.id);
-      const newPhotos = [...state.photos];
-      newPhotos.forEach(photo => {
+      const newPhotos = state.photos.map(photo => {
         if (photo.id === action.photo.id) {
-          photo.isSelected = false;
+          return {
+            ...photo,
+            isSelected: false
+          };
+        } else {
+          return photo;
         }
       });
       ctx.setState({
@@ -287,44 +293,42 @@ export class ShopState {
   @Action(SelectPhoto)
   selectPhoto(ctx: StateContext<ShopStateModel>, action: SelectPhoto) {
     const state = ctx.getState();
-    const updatedPhotos = [...state.photos];
-    updatedPhotos.forEach(photo => {
-      if (photo.id === action.id) {
-        photo.isSelected = !photo.isSelected;
-      }
-    });
-    ctx.setState({
-      ...state,
-      photos: updatedPhotos
-    });
-    // const updatedSelected: Photo[] = state.selectedPhotos.filter(selectedPhoto => selectedPhoto.id !== action.id);
-    // if (updatedSelected.length === state.selectedPhotos.length) {
-    //   const photo = state.photos.find(p => p.id === action.id);
-    //   const updatedPhotos = [...state.photos];
-    //   updatedPhotos.forEach(updatedPhoto => {
-    //     if (updatedPhoto.id === action.id) {
-    //       debugger;
-    //       updatedPhoto.isSelected = true;
-    //     }
-    //   });
-    //   ctx.setState({
-    //     ...state,
-    //     selectedPhotos: [...state.selectedPhotos, photo],
-    //     photos: updatedPhotos
-    //   });
-    // } else {
-    //   const updatedPhotos = [...state.photos];
-    //   updatedPhotos.forEach(photo => {
-    //     if (photo.id === action.id) {
-    //       photo.isSelected = false;
-    //     }
-    //   });
-    //   ctx.setState({
-    //     ...state,
-    //     selectedPhotos: updatedSelected,
-    //     photos: updatedPhotos
-    //   });
-    // }
+
+    const updatedSelected: Photo[] = state.selectedPhotos.filter(selectedPhoto => selectedPhoto.id !== action.id);
+    if (updatedSelected.length === state.selectedPhotos.length) {
+      const updatedPhotos = state.photos.map(updatedPhoto => {
+        if (updatedPhoto.id === action.id) {
+          return {
+            ...updatedPhoto,
+            isSelected: true
+          };
+        } else {
+          return updatedPhoto;
+        }
+      });
+      const photo: Photo = updatedPhotos.find(p => p.id === action.id);
+      ctx.setState({
+        ...state,
+        selectedPhotos: [...state.selectedPhotos, photo],
+        photos: updatedPhotos
+      });
+    } else {
+      const updatedPhotos = state.photos.map(updatedPhoto => {
+        if (updatedPhoto.id === action.id) {
+          return {
+            ...updatedPhoto,
+            isSelected: false
+          };
+        } else {
+          return updatedPhoto;
+        }
+      });
+      ctx.setState({
+        ...state,
+        selectedPhotos: updatedSelected,
+        photos: updatedPhotos
+      });
+    }
   }
 
   @Action(ShowSettingsPopup)

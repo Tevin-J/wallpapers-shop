@@ -81,6 +81,10 @@ export class MainPageComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.initializeBasket();
     this.getPhotos();
+    this.photos$
+      .subscribe(data => {
+        this.photos = data;
+      });
     this.selectedPhotos$
       .subscribe(data => {
         this.selectedPhotos = data;
@@ -108,10 +112,6 @@ export class MainPageComponent implements OnInit, AfterViewInit {
   }
 
   getPhotos(): void {
-    this.photos$
-      .subscribe(data => {
-        this.photos = data;
-      });
     this.store.dispatch(new GetPhotos());
   }
 
