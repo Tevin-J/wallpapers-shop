@@ -11,3 +11,11 @@ export interface Item {
   id: string;
   url: string;
 }
+
+export interface SearchPhotosRequest {
+  term: string;
+  page?: number;
+  price?: number;
+  color?: string;
+  orientation?: string;
+}

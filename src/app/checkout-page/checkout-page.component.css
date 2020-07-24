@@ -122,6 +122,3 @@
   border: 2px solid red;
 }
 
-.ng-valid.ng-touched input {
-  border: 2px solid green;
-}

@@ -94,7 +94,7 @@ export class CheckoutPageComponent implements OnInit, OnDestroy {
 
     /*инициализируем форму по вводу промокода*/
     this.promoForm = new FormGroup({
-      promo: new FormControl('', [Validators.required/*, this.correctPromo*/])
+      promo: new FormControl('', [Validators.required])
     });
   }
 

@@ -92,6 +92,11 @@ export class ShopState {
   }
 
   @Selector()
+  static term(state: ShopStateModel): string {
+    return state.term;
+  }
+
+  @Selector()
   static price(state: ShopStateModel): number {
     return state.price;
   }
@@ -148,7 +153,8 @@ export class ShopState {
     return this.appService.getPhotos$
       .pipe(
         map(response => {
-          const photos = JSON.parse(response);
+          const photos = response;
+          // @ts-ignore
           photos.forEach(photo => {
             photo.isSelected = false;
           });
@@ -160,11 +166,13 @@ export class ShopState {
         if (page === 1) {
           ctx.setState({
             ...state,
+            // @ts-ignore
             photos: data
           });
         } else {
           ctx.setState({
             ...state,
+            // @ts-ignore
             photos: [...state.photos, ...data]
           });
         }
@@ -402,14 +410,16 @@ export class ShopState {
         delay(2000),
         tap(value => {
           const state = ctx.getState();
-          if (!value) {
+          // @ts-ignore
+          if (!value.num) {
             ctx.setState({
               ...state,
-              isPurchaseSucceed: value
+              isPurchaseSucceed: 0
             });
           }
         }),
-        filter(value => value === 1)
+        // @ts-ignore
+        filter(value => value.num === 1)
       );
   }
 

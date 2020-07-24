@@ -19,7 +19,7 @@
 
   <form class="promo-block" [formGroup]="promoForm" (ngSubmit)="submitPromo()">
     <h2>Enter promo code</h2>
-    <input matInput type="text" placeholder="for $5 and more" formControlName="promo">
+    <input matInput type="text" formControlName="promo">
     <button type="submit" mat-raised-button [disabled]="promoForm.invalid">OK</button>
   </form>
 

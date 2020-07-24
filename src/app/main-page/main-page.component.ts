@@ -46,6 +46,9 @@ export class MainPageComponent implements OnInit, AfterViewInit {
   @Select(ShopState.price)
   public price$: Observable<number>;
 
+  @Select(ShopState.term)
+  public term$: Observable<string>;
+
   public photos: Photo[];
   openedPhoto: Photo;
   selectedPhotos: Photo[];
@@ -53,6 +56,7 @@ export class MainPageComponent implements OnInit, AfterViewInit {
   price: number | null;
   color: string | null;
   orientation: string | null;
+  term: string | null;
 
   colors: Color[] = [
     { value: 'black_and_white' },
@@ -104,6 +108,10 @@ export class MainPageComponent implements OnInit, AfterViewInit {
     this.orientation$
       .subscribe(data => {
         this.orientation = data;
+      });
+    this.term$
+      .subscribe(data => {
+        this.term = data;
       });
   }
 

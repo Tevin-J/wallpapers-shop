@@ -23,8 +23,10 @@
 </div>
 <button *ngIf="selectedPhotos.length" mat-raised-button (click)="addToBasket()"
         class="buy-button">Buy {{selectedPhotos.length}}</button>
-<div class="settings" *ngIf="!isFiltersPopupShowed; else settingsPopup">
-  <img src="../../assets/img/settings.svg" alt="settings" (click)="showSettingsPopup()">
+<div *ngIf="term">
+  <div class="settings" *ngIf="!isFiltersPopupShowed; else settingsPopup">
+    <img src="../../assets/img/settings.svg" alt="settings" (click)="showSettingsPopup()">
+  </div>
 </div>
 <ng-template #settingsPopup>
   <div class="settings-popup">
